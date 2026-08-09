@@ -22,7 +22,7 @@
    ================================================================ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#ededed;
+  --bg:#f3f0e8;
   --card:#ffffff;
   --ink:#121316;
   --muted:#8b8f95;
@@ -35,6 +35,8 @@
   --tint-line:#e4e5e7;
   --amber:#c9a227;          /* aksen gold: badge, rating, notifikasi */
   --amber-tint:#faf3df;
+  --gold-grad:linear-gradient(135deg,#f4d675 0%,#c9a227 45%,#8a6a13 100%);
+  --gold-grad-soft:linear-gradient(135deg,#e8c866,#b8922a);
   --price:#a5811f;
   --radius:16px;
   --shadow:0 1px 2px rgba(0,0,0,.05);
@@ -92,7 +94,7 @@ header{
 .head-inner{display:flex;align-items:center;gap:12px;height:56px}
 .logo{flex:none;display:flex;align-items:center}
 .logo .word{font-family:'Poppins',var(--font);font-weight:800;font-size:19px;letter-spacing:-.02em;white-space:nowrap}
-.logo .word em{font-style:normal;color:var(--amber)}
+.logo .word em{font-style:normal;background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .search{
   flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:#f0f2f5;border:none;
   border-radius:999px;padding:9px 9px 9px 16px;min-width:0;color:var(--muted);transition:box-shadow .15s;
@@ -351,10 +353,10 @@ header{
 .fab{
   position:fixed;right:22px;bottom:22px;z-index:85;
   display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;
-  background:var(--green);color:#fff;font-weight:600;font-size:14.5px;border:none;
-  box-shadow:var(--shadow-lg);transition:background .15s,transform .15s;
+  background:var(--gold-grad);color:#121316;font-weight:800;font-size:14.5px;border:1px solid #b8922a;
+  box-shadow:0 10px 26px -6px rgba(180,140,30,.55);transition:transform .15s,filter .15s;
 }
-.fab:hover{background:var(--green-2);transform:translateY(-1px)}
+.fab:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .bottom-nav{display:none}
 
 /* ============ MODAL & DRAWER ============ */
@@ -556,7 +558,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .quest-banner:active{transform:scale(.98)}
 .quest-banner b{font-size:14.5px}
 .quest-banner p{font-size:12px;opacity:.75;margin-top:2px}
-.quest-banner .q-go{margin-left:auto;background:var(--amber);color:#121316;border:none;border-radius:0;padding:8px 16px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.quest-banner .q-go{margin-left:auto;background:var(--gold-grad);color:#121316;border:none;border-radius:0;padding:8px 16px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
 .q-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .q-top b{font-size:15px}
@@ -639,18 +641,21 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .top-nav button.on{color:#a5811f;font-weight:800}
 /* tablet: nav 4 tombol harus tetap muat satu baris */
 @media(max-width:880px){.top-nav button{padding:8px 7px;font-size:13px}.head-actions{gap:6px}}
-.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px}
+.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px;border:1px solid #d9c078;box-shadow:0 10px 30px -8px rgba(180,140,30,.35)}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55) 85%);pointer-events:none}
+.hero::before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--gold-grad);z-index:2}
 .hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.55}
 .hero-text{
   position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:#fff;text-align:center;pointer-events:none;padding:0 14px;
+  color:#fff;text-align:center;pointer-events:none;padding:0 14px;z-index:1;
 }
 .hw-big{font-size:clamp(30px,6vw,54px);font-weight:800;letter-spacing:-.03em;text-shadow:0 2px 18px rgba(0,0,0,.4)}
-.hw-sub{font-size:clamp(12px,2vw,15.5px);font-weight:600;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-top:4px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.hw-sub{font-size:clamp(12px,2vw,15.5px);font-weight:700;background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.16em;text-transform:uppercase;margin-top:6px;filter:drop-shadow(0 1px 6px rgba(0,0,0,.5))}
 .shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-.shop-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.shop-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;padding-left:14px}
+.shop-head h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;background:var(--gold-grad);border-radius:2px}
 .shop-search{max-width:360px;flex:1;min-width:230px;background:var(--card);border:1px solid var(--line)}
-.go-cta{border:none;background:var(--amber);color:#121316;border-radius:999px;padding:8px 20px;font:inherit;font-weight:700;font-size:13px;flex:none}
+.go-cta{border:none;background:var(--gold-grad);color:#121316;border-radius:999px;padding:8px 20px;font:inherit;font-weight:800;font-size:13px;flex:none;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .shop-grid{display:grid;grid-template-columns:225px minmax(0,1fr);gap:24px;align-items:start}
 @media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:118px}}
 .filter-side{position:sticky;top:110px}
@@ -671,9 +676,9 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .pcard{display:flex;flex-direction:column;cursor:pointer;min-width:0}
 .pcard-media{
   position:relative;aspect-ratio:1/1;background:var(--tint);border-radius:14px;overflow:hidden;
-  display:grid;place-items:center;margin-bottom:7px;transition:transform .2s;
+  display:grid;place-items:center;margin-bottom:7px;transition:all .2s;border:1px solid transparent;
 }
-@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-3px)}}
+@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-4px);border-color:#d9c078;box-shadow:0 14px 28px -10px rgba(180,140,30,.4)}}
 .pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pcard-media .cat-pill{
   position:absolute;top:7px;right:7px;background:#fff;border-radius:999px;padding:3px 9px;
@@ -682,7 +687,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .pcard-media .n-pill{position:absolute;left:9px;bottom:9px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:700}
 .pcard-row{display:flex;justify-content:space-between;gap:8px;align-items:baseline;min-width:0}
 .pcard-name{font-size:12px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
-.pcard-price{font-size:12px;font-weight:800;flex:none}
+.pcard-price{font-size:12.5px;font-weight:800;flex:none;color:var(--price)}
 .pcard-rate{font-size:10.5px;color:var(--muted);margin:2px 0 1px}
 .pcard-rate .st{color:var(--amber);font-weight:800}
 .pcard-seller{font-size:10.5px;color:var(--muted);margin-bottom:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
@@ -693,9 +698,9 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 }
 .pb-out{background:var(--card);border:1px solid var(--line);color:var(--ink)}
 .pb-out:hover{border-color:var(--ink)}
-.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:var(--amber)}
-.pb-dark{background:var(--ink);border:1px solid var(--ink);color:#fff}
-.pb-dark:hover{background:#000}
+.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:#a5811f}
+.pb-dark{background:var(--gold-grad);border:1px solid #b8922a;color:#121316;font-weight:800}
+.pb-dark:hover{filter:brightness(1.08)}
 .pb-dark:disabled{opacity:.4}
 
 /* rekomendasi horizontal + panah */
@@ -716,12 +721,12 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 }
 .cta-banner h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:#fff}
 .cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
-.cta-btn{border:1px solid var(--amber);background:var(--amber);color:#121316;border-radius:0;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s}
+.cta-btn{border:1px solid #b8922a;background:var(--gold-grad);color:#121316;border-radius:0;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .cta-btn:active{transform:scale(.96)}
 
 /* footer */
 .foot{margin-top:26px;border-top:1px solid var(--line);padding:26px 4px 10px}
-.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:560px}
+.foot-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:760px}
 .foot b{font-size:13.5px;display:block;margin-bottom:10px}
 .foot a,.foot span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;cursor:pointer}
 .foot a:hover{color:var(--ink)}
@@ -774,9 +779,9 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
     background:var(--amber);color:#121316;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;
   }
   .bn-sell{
-    width:48px;height:48px;border-radius:50%;background:var(--amber);border:2px solid #fff;
+    width:48px;height:48px;border-radius:50%;background:var(--gold-grad);border:2px solid #fff;
     color:#121316;display:grid;place-items:center;margin-top:-22px;
-    box-shadow:var(--shadow-lg);flex:none;
+    box-shadow:0 10px 22px -4px rgba(180,140,30,.6);flex:none;
   }
   .head-inner{gap:8px;height:54px}
   .search{max-width:none}
@@ -802,6 +807,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   .qris{width:164px;height:164px}
   .va-num{font-size:16.5px;letter-spacing:1px}
   #toasts{bottom:84px}
+  .foot-grid{grid-template-columns:1fr 1fr;max-width:none}
 }
 </style>
 </head>
@@ -908,6 +914,12 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
                 <a onclick="openInfoBiaya()">Biaya &amp; Komisi</a>
                 <a onclick="setJelajah('kuliner')">Kuliner Sekitar</a>
                 <a onclick="setJelajah('wisata')">Wisata Lebak</a>
+              </div>
+              <div>
+                <b>Bantuan</b>
+                <a onclick="openFAQ()">Pertanyaan Umum (FAQ)</a>
+                <a onclick="openTerms()">Syarat &amp; Ketentuan</a>
+                <a onclick="openPrivacy()">Kebijakan Privasi</a>
               </div>
               <div>
                 <b>Belanja Aman</b>
@@ -1613,6 +1625,79 @@ async function openInfoBiaya(){
   </div>`;
 }
 
+/* ---------- HALAMAN LEGAL & BANTUAN (statis) ---------- */
+function openTerms(){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Syarat &amp; Ketentuan</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body" style="font-size:13.5px;line-height:1.7;color:var(--ink)">
+        <p style="color:var(--muted);margin-bottom:14px">Terakhir diperbarui: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+        <h4>1. Tentang Lebak.market</h4>
+        <p>Lebak.market adalah platform jual-beli daring yang mempertemukan penjual dan pembeli di wilayah Kabupaten Lebak. Kami menyediakan tempat berjualan, bukan pemilik barang/jasa yang diperjualbelikan.</p>
+        <h4 style="margin-top:12px">2. Akun Pengguna</h4>
+        <p>Pengguna wajib mendaftar dengan data yang benar dan bertanggung jawab penuh atas aktivitas di akunnya. Satu orang hanya boleh memiliki satu akun.</p>
+        <h4 style="margin-top:12px">3. Rekening Bersama (Rekber)</h4>
+        <p>Dana pembeli ditahan oleh sistem hingga barang/jasa diterima dan dikonfirmasi. Dana diteruskan ke penjual setelah pembeli menekan "Selesai" atau otomatis setelah masa tunggu tertentu tanpa keberatan dari pembeli.</p>
+        <h4 style="margin-top:12px">4. Larangan</h4>
+        <p>Dilarang menjual barang ilegal, memalsukan produk, melakukan penipuan, atau menyalahgunakan sistem rekber/promo. Pelanggaran dapat berakibat pemblokiran akun tanpa pemberitahuan.</p>
+        <h4 style="margin-top:12px">5. Biaya</h4>
+        <p>Rincian biaya aplikasi dan komisi tercantum di menu "Biaya & Komisi" dan selalu ditampilkan jelas sebelum pembayaran dilakukan.</p>
+        <h4 style="margin-top:12px">6. Sengketa</h4>
+        <p>Perselisihan antara pembeli dan penjual pertama-tama diselesaikan lewat fitur chat. Jika tidak menemui titik temu, admin Lebak.market dapat menjadi penengah berdasarkan bukti yang diberikan kedua pihak.</p>
+        <h4 style="margin-top:12px">7. Perubahan Ketentuan</h4>
+        <p>Ketentuan ini dapat berubah sewaktu-waktu. Perubahan penting akan diinformasikan melalui aplikasi.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openPrivacy(){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Kebijakan Privasi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body" style="font-size:13.5px;line-height:1.7;color:var(--ink)">
+        <p style="color:var(--muted);margin-bottom:14px">Terakhir diperbarui: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+        <h4>1. Data yang Kami Kumpulkan</h4>
+        <p>Nama, email, nomor telepon, kecamatan domisili, foto profil (opsional), lokasi GPS (saat kamu mengizinkan, untuk mengukur jarak & pengiriman), riwayat transaksi, dan pesan chat antar pengguna.</p>
+        <h4 style="margin-top:12px">2. Penggunaan Data</h4>
+        <p>Data dipakai untuk: memproses transaksi & rekber, verifikasi akun (OTP email), menghitung jarak/ongkir, notifikasi status pesanan, dan mencegah penyalahgunaan platform.</p>
+        <h4 style="margin-top:12px">3. Berbagi Data ke Pihak Ketiga</h4>
+        <p>Kami hanya membagikan data seperlunya ke: penyedia payment gateway (untuk memproses QRIS), penyedia layanan email (untuk mengirim kode OTP). Kami tidak menjual data pengguna ke pihak manapun.</p>
+        <h4 style="margin-top:12px">4. Keamanan</h4>
+        <p>Kata sandi disimpan terenkripsi (hash), bukan teks biasa. Transaksi pembayaran diproses lewat payment gateway berlisensi, bukan disimpan mentah di server kami.</p>
+        <h4 style="margin-top:12px">5. Hak Pengguna</h4>
+        <p>Kamu berhak meminta penghapusan akun & data pribadimu kapan saja dengan menghubungi admin, kecuali data yang wajib disimpan untuk kepatuhan hukum (misal riwayat transaksi).</p>
+        <h4 style="margin-top:12px">6. Kontak</h4>
+        <p>Pertanyaan seputar privasi bisa disampaikan lewat menu Chat ke admin Lebak.market.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openFAQ(){
+  const faqs = [
+    ['Bagaimana cara belanja aman?', 'Semua transaksi lewat Rekber (rekening bersama) — dana kamu ditahan sistem dan baru diteruskan ke penjual setelah kamu konfirmasi barang diterima.'],
+    ['Bagaimana cara bayar?', 'Scan QRIS otomatis yang muncul saat checkout (berlaku untuk GoPay, OVO, DANA, atau m-banking apapun), atau pakai saldo Lebak.market.'],
+    ['Barang belum sampai / tidak sesuai, gimana?', 'Jangan tekan "Selesai" dulu. Chat penjualnya, kalau tidak selesai hubungi admin lewat menu Chat untuk mediasi.'],
+    ['Bagaimana cara jadi penjual?', 'Tekan tombol "+ Mulai Jualan", isi data produk & foto, gratis tanpa biaya posting.'],
+    ['Apa itu Side Quest?', 'Misi ringan dari Lebak.market yang hadiahnya masuk saldo akunmu, bisa dipakai belanja atau ditarik tunai.'],
+    ['Berapa biaya platform?', 'Cek rincian lengkap & transparan di menu "Biaya & Komisi" pada halaman utama.'],
+    ['Lupa kata sandi / kode OTP tidak masuk?', 'Cek folder spam email kamu. Kalau masih belum masuk, tekan "Kirim ulang" di halaman verifikasi.'],
+  ];
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Pertanyaan Umum (FAQ)</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        ${faqs.map(([q,a]) => `<div style="margin-bottom:16px"><b style="font-size:13.5px">${esc(q)}</b><p style="font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.6">${esc(a)}</p></div>`).join('')}
+        <div class="safe-note">Masih ada pertanyaan? Hubungi admin lewat menu Chat.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
 /* ---------- VIEWS ---------- */
 function showView(v){
   ['feed','orders','kuliner','misi'].forEach(x => {
@@ -1756,7 +1841,7 @@ function pcardHTML(p){
       ${out ? '<div class="sold-out"><b>HABIS</b></div>' : ''}
     </div>
     <div class="pcard-row"><span class="pcard-name">${esc(p.name)}</span><span class="pcard-price">${rupiah(p.price)}</span></div>
-    <div class="pcard-rate"><span class="st">★</span> ${p.likes} suka · ${km(p.dist)}${p.cond === 'bekas' ? ' · Bekas' : ''}</div>
+    <div class="pcard-rate">${p.avg_rating ? `<span class="st">★</span> ${(+p.avg_rating).toFixed(1)} (${p.review_count})` : `<span class="st">★</span> ${p.likes} suka`} · ${km(p.dist)}${p.cond === 'bekas' ? ' · Bekas' : ''}</div>
     <div class="pcard-seller">oleh ${esc(p.seller_name)} <span class="verif">✓</span>${mine ? ' (kamu)' : ''}</div>
     <div class="pcard-btns">
       <button class="pb-out ${faved ? 'on' : ''}" onclick="event.stopPropagation();toggleFav(${p.id})">${faved ? '♥ Tersimpan' : '♡ Favorit'}</button>
@@ -1809,9 +1894,30 @@ function openProduct(id, imgIdx = 0){
                     <button class="btn" style="color:#c0392b;border-color:#efc7c2" onclick="deleteProduct(${p.id})">Hapus Produk</button>`
                  : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli Sekarang</button>`}
         </div>
+        <div id="pdReviews" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+          <b style="font-size:13.5px">${p.avg_rating ? `★ ${(+p.avg_rating).toFixed(1)} · ${p.review_count} ulasan` : 'Belum ada ulasan'}</b>
+          <div id="pdReviewList" style="margin-top:10px;font-size:12.5px;color:var(--muted)">Memuat ulasan...</div>
+        </div>
       </div>
     </div>
   </div>`;
+  loadProductReviews(p.id);
+}
+async function loadProductReviews(id){
+  const el = document.getElementById('pdReviewList');
+  if (!el) return; // modal sudah ditutup sebelum request selesai
+  try {
+    const r = await api('/products/' + id + '/reviews');
+    if (!r.reviews.length){ el.textContent = 'Jadilah yang pertama memberi ulasan setelah membeli.'; return; }
+    el.innerHTML = r.reviews.map(rv => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b style="font-size:12.5px;color:var(--ink)">${esc(rv.buyer_name)}</b>
+          <span style="color:var(--amber)">${'★'.repeat(rv.rating)}${'☆'.repeat(5-rv.rating)}</span>
+        </div>
+        ${rv.comment ? `<p style="margin-top:2px">${esc(rv.comment)}</p>` : ''}
+      </div>`).join('');
+  } catch { el.textContent = 'Gagal memuat ulasan.'; }
 }
 async function deleteProduct(id){
   if (!confirm('Hapus produk ini dari toko? Transaksi lama tetap tersimpan.')) return;
@@ -2273,6 +2379,42 @@ const STAT_CLASS = {
 const CONFIRMABLE = ['Dikirim','Diantar Driver','Hasil Dikirim'];
 function setOrdTab(t){ ordTab = t; renderOrders(); }
 
+/* ---------- RATING & ULASAN ---------- */
+let reviewStars = 0;
+function openReviewForm(orderId){
+  reviewStars = 0;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Beri Ulasan</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Bagaimana pengalamanmu dengan pesanan ini?</p>
+        <div id="starPicker" style="display:flex;gap:6px;font-size:32px;justify-content:center;margin-bottom:16px;cursor:pointer">
+          ${[1,2,3,4,5].map(n => `<span data-n="${n}" onclick="setReviewStars(${n})" style="color:var(--line);transition:color .1s">★</span>`).join('')}
+        </div>
+        <textarea id="reviewComment" placeholder="Ceritakan pengalamanmu (opsional)..." style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:13.5px;resize:vertical"></textarea>
+        <button class="btn btn-coral" style="width:100%;margin-top:14px" onclick="submitReview('${orderId}')">Kirim Ulasan</button>
+      </div>
+    </div>
+  </div>`;
+}
+function setReviewStars(n){
+  reviewStars = n;
+  document.querySelectorAll('#starPicker span').forEach(el => {
+    el.style.color = +el.dataset.n <= n ? 'var(--amber)' : 'var(--line)';
+  });
+}
+async function submitReview(orderId){
+  if (!reviewStars) return toast('Pilih dulu jumlah bintangnya');
+  const comment = document.getElementById('reviewComment').value.trim();
+  try {
+    await api('/orders/' + orderId + '/review', { method: 'POST', body: { rating: reviewStars, comment } });
+    closeModal();
+    toast('Terima kasih atas ulasannya! ⭐');
+    renderOrders();
+  } catch (e) { toast(e.message); }
+}
+
 function orderCard(o, asSeller){
   const shippable = asSeller && o.status === 'Dana Ditahan (Rekber)';
   const isJasa = o.cat === 'jasa' || o.dist === 0;
@@ -2309,6 +2451,8 @@ function orderCard(o, asSeller){
       ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Sudah Ketemu &amp; Barang Oke</button>` : ''}
       ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via chat</span>` : ''}
       ${['Selesai','Selesai — Dana Cair','Dibatalkan'].includes(o.status) ? `<button class="btn btn-sm" onclick="hideOrder('${o.id}')">Hapus dari Riwayat</button>` : ''}
+      ${!asSeller && o.status.startsWith('Selesai') && !o.has_review ? `<button class="btn btn-sm" style="border-color:var(--amber);color:#a5811f" onclick="openReviewForm('${o.id}')">★ Beri Ulasan</button>` : ''}
+      ${!asSeller && o.status.startsWith('Selesai') && o.has_review ? `<span class="live-pill" style="opacity:.7">✓ sudah diulas</span>` : ''}
     </div>
   </div>`;
 }
