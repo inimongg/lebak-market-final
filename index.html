@@ -1,0 +1,2682 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lebak.market — Marketplace Warga Lebak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<meta name="description" content="Lebak-Market — Marketplacena Urang Lebak. Jual-beli aman dengan rekber, COD terdekat, driver lokal, kuliner & wisata Lebak.">
+<meta name="theme-color" content="#121316">
+<meta property="og:title" content="Lebak-Market. — Marketplacena Urang Lebak">
+<meta property="og:description" content="Jual-beli warga Kabupaten Lebak: rekber aman, COD terdekat, driver lokal, kuliner & wisata.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121316'/%3E%3Ctext x='31' y='45' font-family='Arial,sans-serif' font-size='36' font-weight='800' fill='%23ffffff' text-anchor='middle'%3EL%3C/text%3E%3Ccircle cx='50' cy='45' r='4' fill='%23ff8a00'/%3E%3C/svg%3E">
+<style>
+/* ================================================================
+   LEBAK.MARKET — Desain ala FACEBOOK: navbar putih dengan ikon bulat,
+   layout 3 kolom di desktop (menu kiri · feed tengah · sidebar kanan),
+   kartu post dengan bar aksi Suka/Chat/Bagikan, stories, dan composer
+   "mau jual apa hari ini?". Fitur tidak berubah — hanya presentasi.
+   ================================================================ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ededed;
+  --card:#ffffff;
+  --ink:#121316;
+  --muted:#8b8f95;
+  --line:#e9eaec;
+  --hover:#f4f4f5;
+  --icon-bg:#f1f1f2;
+  --green:#121316;          /* primer = hitam (tombol, chip aktif) */
+  --green-2:#000000;
+  --tint:#f4f4f5;
+  --tint-line:#e4e5e7;
+  --amber:#ff8a00;          /* aksen oranye: badge, rating, notifikasi */
+  --amber-tint:#fff4e6;
+  --price:#121316;
+  --radius:16px;
+  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg:0 18px 44px rgba(0,0,0,.13);
+  --font:'Plus Jakarta Sans','Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6;overflow-x:hidden;font-size:15px}
+::selection{background:var(--tint);color:var(--ink)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3,h4{line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ============ ELEMEN DASAR ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 22px;border-radius:999px;font-weight:700;font-size:14px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  transition:background .15s,border-color .15s,color .15s;
+}
+.btn:hover{border-color:#c9ced4;background:#fafbfa}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-coral{background:var(--green);border-color:var(--green);color:#fff}
+.btn-coral:hover{background:var(--green-2);border-color:var(--green-2)}
+.btn-yellow{background:var(--card);border-color:var(--line);color:var(--ink)}
+.btn-yellow:hover{border-color:var(--green);color:var(--green);background:var(--card)}
+.btn-mint{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
+.btn-mint:hover{background:#dcecdf;border-color:var(--green)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:999px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card);font-weight:600;font-size:13.5px;
+  color:var(--muted);transition:all .15s;white-space:nowrap;
+}
+.chip:hover{border-color:var(--green);color:var(--green)}
+.chip.active{background:var(--green);border-color:var(--green);color:#fff}
+.chip.mini{padding:5px 13px;font-size:12px}
+.chip.mini.active{background:var(--green);border-color:var(--green);color:#fff}
+.badge{
+  display:inline-block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+  border-radius:6px;padding:2px 9px;background:#f1f3f4;color:var(--muted);
+}
+.b-jasa,.b-makanan,.b-elektronik,.b-ikan,.b-fashion,.b-kriya{background:#f1f3f4;color:var(--muted)}
+.b-baru{background:var(--tint);color:var(--green)}
+.b-bekas{background:var(--amber-tint);color:var(--amber)}
+.hidden{display:none!important}
+
+/* ============ HEADER ============ */
+header{
+  position:sticky;top:0;z-index:90;background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.head-inner{display:flex;align-items:center;gap:12px;height:56px}
+.logo{flex:none;display:flex;align-items:center}
+.logo .word{font-family:'Poppins',var(--font);font-weight:800;font-size:19px;letter-spacing:-.02em;white-space:nowrap}
+.logo .word em{font-style:normal;color:var(--amber)}
+.search{
+  flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:#f0f2f5;border:none;
+  border-radius:999px;padding:9px 9px 9px 16px;min-width:0;color:var(--muted);transition:box-shadow .15s;
+}
+.search:focus-within{box-shadow:0 0 0 2px var(--green)}
+.search .go{
+  border:none;background:transparent;color:var(--muted);border-radius:50%;width:30px;height:30px;
+  display:grid;place-items:center;flex:none;transition:background .15s;
+}
+.search .go:hover{background:var(--icon-bg);color:var(--ink)}
+.search input{border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;color:var(--ink);min-width:0}
+.head-actions{display:flex;gap:8px;flex:none;align-items:center;margin-left:auto}
+.icon-btn{
+  position:relative;width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--icon-bg);display:grid;place-items:center;color:var(--ink);transition:filter .15s;
+}
+.icon-btn:hover{filter:brightness(.94)}
+.icon-btn .count{
+  position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:999px;
+  background:var(--amber);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;
+  padding:0 4px;
+}
+.ava-btn{
+  width:38px;height:38px;border-radius:50%;border:none;font-weight:700;font-size:15px;
+  background:var(--tint);color:var(--green);display:grid;place-items:center;transition:box-shadow .15s;
+  margin-left:4px;
+}
+.ava-btn:hover{box-shadow:0 0 0 3px var(--tint)}
+.login-btn{
+  padding:9px 22px;border-radius:999px;border:none;background:var(--green);color:#fff;
+  font-weight:700;font-size:13.5px;transition:background .15s;margin-left:4px;
+}
+.login-btn:hover{background:var(--green-2)}
+@media(max-width:680px){.logo .word{font-size:16px}}
+
+/* ============ COMPOSER "mau jual apa?" (ala status box FB) ============ */
+.composer{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:12px 16px;display:flex;gap:10px;align-items:center;margin-bottom:16px;
+}
+.composer .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:var(--tint);color:var(--green);font-weight:700;font-size:16px;
+}
+.composer .ask{
+  flex:1;text-align:left;border:none;background:#f0f2f5;border-radius:999px;
+  padding:11px 16px;font-size:14.5px;color:var(--muted);transition:background .15s;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.composer .ask:hover{background:var(--icon-bg)}
+.composer .cam{
+  border:none;background:transparent;border-radius:8px;padding:8px 10px;display:inline-flex;
+  align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--green);flex:none;
+}
+.composer .cam:hover{background:var(--hover)}
+
+/* ============ AVATAR FOTO & GALERI ============ */
+.ava img,.ava-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ava-btn{overflow:hidden;padding:0}
+.chat-list-row .ava,.seller-row .ava{overflow:hidden}
+.pf-ava{width:78px;height:78px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--ink);font-weight:800;font-size:30px;margin:0 auto 8px}
+.pf-ava img{width:100%;height:100%;object-fit:cover}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-grid .ph{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.photo-grid .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-grid .ph .x-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;font-size:11px;background:rgba(255,255,255,.95)}
+.photo-grid .add{display:grid;place-items:center;cursor:pointer;background:var(--bg);border:1px dashed #c9ced4;color:var(--muted);font-size:24px;border-radius:10px;aspect-ratio:1/1}
+.imgs-count{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:2px 8px;font-weight:700;font-size:10px}
+.pd-thumbs{display:flex;gap:7px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
+.pd-thumbs img{width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;flex:none}
+.pd-thumbs img.on{border-color:var(--ink)}
+
+/* ============ KATEGORI + RADIUS ============ */
+.cat-bar{
+  position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(8px);padding:9px 0 8px;border-bottom:1px solid var(--line);
+}
+@media(min-width:901px){.cat-bar .filter-bar #filterBtn{display:none}}
+
+.cat-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:1px 2px}
+.cat-scroll::-webkit-scrollbar{display:none}
+.radius-row{
+  display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;
+  padding:9px 2px 1px;font-size:12px;font-weight:600;color:var(--muted);
+  flex-wrap:nowrap;white-space:nowrap;
+}
+.radius-row::-webkit-scrollbar{display:none}
+.radius-row .loc{white-space:nowrap;display:inline-flex;gap:5px;align-items:center;flex:none}
+#radiusChips{display:contents}
+.radius-row .chip{flex:none}
+
+.filter-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:2px 0}
+.filter-bar .loc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;font-weight:600;color:var(--muted)}
+#filterBtn{flex:none}
+#filterBtn .count{min-width:17px;height:17px;border-radius:999px;background:var(--amber);color:#fff;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 4px}
+.chip-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+
+/* ============ LAYOUT 3 KOLOM (ala Facebook) ============ */
+.main-grid{display:block;padding:18px 0 90px;max-width:1180px;margin:0 auto}
+
+/* menu kiri */
+.lnav{position:sticky;top:152px;display:flex;flex-direction:column;gap:2px}
+.lnav-item{
+  display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;border:none;
+  background:transparent;font-weight:600;font-size:14.5px;color:var(--ink);text-align:left;
+  transition:background .12s;width:100%;
+}
+.lnav-item:hover{background:var(--icon-bg)}
+.lnav-item.on{background:var(--tint);color:var(--green)}
+.lnav-item .lic{
+  width:36px;height:36px;border-radius:50%;background:var(--icon-bg);color:var(--ink);
+  display:grid;place-items:center;flex:none;
+}
+.lnav-item.on .lic{background:var(--green);color:#fff}
+.lnav .btn-coral{margin-top:10px}
+.lnav-foot{font-size:11px;color:var(--muted);padding:14px 10px 0;line-height:1.6}
+
+/* sidebar kanan */
+.rightbar{position:sticky;top:152px;display:flex;flex-direction:column;gap:16px}
+.side-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.side-card h3{font-size:14px;margin-bottom:10px;color:var(--muted);font-weight:700}
+.trend-card{
+  display:flex;gap:10px;align-items:center;border-radius:9px;padding:7px 8px;cursor:pointer;
+  transition:background .12s;margin:0 -8px;
+}
+.trend-card:hover{background:var(--hover)}
+.trend-card .em{width:44px;height:44px;border-radius:9px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.trend-card b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.trend-card span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.trend-card>div{min-width:0;flex:1}
+
+
+/* ============ FEED POST (kartu ala Facebook) ============ */
+.feed{display:flex;flex-direction:column;gap:16px}
+.post{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.post-head{display:flex;align-items:flex-start;gap:10px;padding:12px 16px 0}
+.post-head .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;flex:none;background:var(--ac,var(--tint));color:var(--green);font-size:16px;
+}
+.post-head .who{flex:1;min-width:0}
+.post-head .who b{display:flex;align-items:center;gap:5px;font-size:14.5px;flex-wrap:wrap;font-weight:700}
+.verif{color:var(--amber);font-size:12px}
+.post-head .who span{font-size:12.5px;color:var(--muted);display:block}
+.post-text{padding:8px 16px 10px}
+.post-price{font-size:19px;font-weight:800;color:var(--price)}
+.post-title{font-size:15px;font-weight:600;margin:1px 0 2px}
+.post-desc{
+  font-size:13.5px;color:var(--muted);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.post-media{
+  display:grid;place-items:center;position:relative;cursor:pointer;
+  aspect-ratio:16/10;background:#f7f8fa;
+}
+.post-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.post-media .cond-tag{position:absolute;left:12px;top:12px}
+.post-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;
+  border-radius:8px;padding:3px 10px;font-weight:600;font-size:11.5px;
+}
+.sold-out{position:absolute;inset:0;background:rgba(255,255,255,.72);display:grid;place-items:center;z-index:1}
+.sold-out b{background:var(--ink);color:#fff;border-radius:9px;padding:7px 18px;font-size:12.5px;letter-spacing:1px}
+.engage{
+  display:flex;justify-content:space-between;gap:10px;padding:9px 16px;
+  font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);margin:0 0;
+}
+.act-row{display:flex;padding:3px 8px}
+.fbact{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;
+  background:transparent;border-radius:7px;padding:8px 4px;font-weight:600;font-size:13.5px;
+  color:var(--muted);transition:background .12s;
+}
+.fbact:hover{background:var(--hover)}
+.fbact.liked{color:var(--green)}
+.fbact.faved{color:var(--amber)}
+.buy-row{display:flex;gap:8px;padding:8px 16px 14px;border-top:1px solid var(--line)}
+.buy-row .btn{flex:1}
+.ptag{
+  font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 7px;
+  background:#f1f3f5;color:var(--muted);letter-spacing:.2px;
+}
+.pt-green{background:var(--tint);color:var(--green)}
+.pt-amber{background:var(--amber-tint);color:var(--amber)}
+.post-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+
+/* detail produk (modal) */
+.pd-media{
+  aspect-ratio:16/10;display:grid;place-items:center;position:relative;
+  border-bottom:1px solid var(--line);
+}
+.pd-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pd-media .cond-tag{position:absolute;left:12px;top:12px}
+.pd-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:rgba(31,41,55,.82);color:#fff;
+  border-radius:8px;padding:3px 10px;font-weight:600;font-size:11.5px;
+}
+.pd-price{font-size:23px;font-weight:800;margin-bottom:2px}
+.pd-name{font-size:15.5px;font-weight:600;margin-bottom:8px}
+.pd-meta{font-size:12px;color:var(--muted);margin:8px 0 10px}
+.pd-desc{font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:12px;white-space:pre-wrap}
+.post-perks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.perk{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  border-radius:6px;padding:3px 9px;background:#f1f3f5;color:var(--muted);
+}
+.pk-lokal{background:var(--tint);color:var(--green)}
+.pk-cod,.pk-rekber,.pk-driver,.pk-far{background:#f1f3f5;color:var(--muted)}
+.post-actions{display:flex;align-items:center;gap:6px;margin:10px 0;flex-wrap:wrap}
+.act{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);
+  border-radius:9px;padding:6px 13px;font-weight:600;font-size:12.5px;color:var(--muted);
+  transition:all .15s;
+}
+.act:hover{border-color:var(--green);color:var(--green)}
+.act.liked{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
+.post-cta{display:flex;gap:9px;flex-wrap:wrap}
+.post-cta .btn{flex:1;min-width:110px}
+.fav-btn.on{background:var(--amber-tint);border-color:#ecd9b6;color:var(--amber)}
+.seller-row{
+  background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 13px;
+  display:flex;gap:11px;align-items:center;
+}
+.seller-row .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;flex:none;background:var(--ac,var(--tint));color:var(--green);
+}
+.empty-feed{
+  text-align:center;background:var(--card);border:1px dashed #cdd3d8;border-radius:var(--radius);
+  padding:56px 24px;grid-column:1/-1;
+}
+.empty-feed .big{font-size:44px;display:block;margin-bottom:10px}
+
+/* tile fallback produk tanpa foto — dua nada netral bergantian */
+.g-1,.g-3,.g-5{background:#edf1ee}
+.g-2,.g-4,.g-6{background:#f0efe9}
+.letter{font-size:52px;font-weight:700;color:#b9c4bc;font-family:Georgia,serif}
+.resto-media .letter{font-size:36px}
+.letter-s{font-size:16px;font-weight:700;color:#9aa89e;font-family:Georgia,serif}
+.em img,.thumb-img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+
+/* ============ ELEMEN INFO (dipakai modal & footer) ============ */
+.mini-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #f0f2f1}
+.mini-row:last-child{border-bottom:none}
+.mini-row .em{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.mini-row div{flex:1;min-width:0}
+.mini-row b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.mini-row span{font-size:11.5px;color:var(--muted)}
+.how-step{display:flex;gap:10px;padding:6px 0;font-size:12.5px;color:var(--muted);align-items:flex-start}
+.how-step .n{
+  flex:none;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;
+  font-size:10.5px;font-weight:700;background:var(--tint);color:var(--green);margin-top:1px;
+}
+
+/* ============ FAB & BOTTOM NAV ============ */
+.fab{
+  position:fixed;right:22px;bottom:22px;z-index:85;
+  display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;
+  background:var(--green);color:#fff;font-weight:600;font-size:14.5px;border:none;
+  box-shadow:var(--shadow-lg);transition:background .15s,transform .15s;
+}
+.fab:hover{background:var(--green-2);transform:translateY(-1px)}
+.bottom-nav{display:none}
+
+/* ============ MODAL & DRAWER ============ */
+.overlay{
+  position:fixed;inset:0;background:rgba(31,41,55,.45);z-index:100;
+  display:grid;place-items:center;padding:18px;overflow-y:auto;
+}
+.modal{
+  background:var(--card);border-radius:20px;width:min(540px,100%);
+  box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;position:relative;
+  animation:pop .2s ease;margin:auto;
+}
+@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:5;
+  border-radius:20px 20px 0 0;
+}
+.modal-head h3{font-size:16px}
+.modal-body{padding:20px 22px 24px}
+.x-btn{
+  width:32px;height:32px;border-radius:9px;border:none;background:#f2f4f3;color:var(--muted);
+  display:grid;place-items:center;font-size:14px;transition:all .15s;flex:none;
+}
+.x-btn:hover{background:#e8ebe9;color:var(--ink)}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(400px,94vw);z-index:110;background:var(--card);
+  border-left:1px solid var(--line);box-shadow:var(--shadow-lg);
+  display:flex;flex-direction:column;animation:slide .2s ease;
+}
+@keyframes slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--line);gap:10px}
+.drawer-head h3{font-size:15.5px}
+.drawer-body{flex:1;overflow-y:auto;padding:16px 20px;background:var(--bg)}
+.drawer-foot{padding:12px 16px;border-top:1px solid var(--line);background:var(--card)}
+.fav-row{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px}
+.fav-row .em{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.fav-row .inf{flex:1;min-width:0}
+.fav-row .inf b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.fav-row .inf span{font-size:12px;color:var(--muted)}
+
+/* ============ AUTH ============ */
+.auth-tabs{display:flex;gap:8px;margin-bottom:18px}
+.auth-tabs .chip{flex:1;justify-content:center}
+.auth-hero{
+  text-align:center;background:var(--tint);border:1px solid var(--tint-line);
+  border-radius:12px;padding:18px;margin-bottom:16px;
+}
+.auth-hero .big{font-size:30px;display:block;color:var(--green)}
+.auth-hero b{font-size:14px}
+.auth-hero p{font-size:12.5px;color:var(--muted);margin-top:4px}
+.dual-badge{
+  display:inline-flex;gap:7px;align-items:center;background:var(--card);border:1px solid var(--tint-line);
+  border-radius:999px;padding:5px 14px;font-size:11.5px;font-weight:600;margin-top:9px;color:var(--green);
+}
+
+/* ============ FORM ============ */
+label.f{display:block;font-size:12.5px;font-weight:600;margin:13px 0 5px;color:var(--ink)}
+input.f,select.f,textarea.f{
+  width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-family:inherit;
+  font-size:14px;background:var(--card);color:var(--ink);outline:none;transition:border-color .15s;
+}
+textarea.f{resize:vertical;min-height:76px}
+input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
+.check-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:500;margin-top:13px;color:var(--muted)}
+.check-row input{width:17px;height:17px;accent-color:var(--green);margin-top:2px;flex:none}
+.check-row b{color:var(--ink)}
+
+/* ============ ALUR BELI ============ */
+.steps-ind{display:flex;gap:6px;margin-bottom:18px}
+.steps-ind i{flex:1;height:4px;border-radius:4px;background:#e8ebe9}
+.steps-ind i.on{background:var(--green)}
+.buy-item{display:flex;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:14px}
+.buy-item .em{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.buy-item b{font-size:13.5px;display:block;font-weight:600}
+.buy-item span{font-size:12px;color:var(--muted)}
+.pay-opt{
+  display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:all .15s;
+}
+.pay-opt:hover{border-color:#c9ced4}
+.pay-opt.sel{border-color:var(--green);background:#fbfdfb;box-shadow:0 0 0 1px var(--green)}
+.pay-opt.off{opacity:.5;cursor:not-allowed;background:var(--bg)}
+.pay-opt.off:hover{border-color:var(--line)}
+.pay-opt .ic{
+  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;
+  background:var(--tint);color:var(--green);font-weight:700;font-size:12px;
+}
+.pay-opt div{flex:1}
+.pay-opt b{font-size:13.5px;display:block;font-weight:600}
+.pay-opt span{font-size:12px;color:var(--muted)}
+.pay-opt .rad{width:19px;height:19px;border-radius:50%;border:1.5px solid #c9ced4;display:grid;place-items:center;flex:none;margin-top:8px}
+.pay-opt.sel .rad{border-color:var(--green)}
+.pay-opt.sel .rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--green)}
+.safe-note{
+  background:var(--tint);border:1px solid var(--tint-line);border-radius:10px;padding:11px 14px;
+  font-size:12.5px;margin-top:13px;color:#2f5c3f;
+}
+.warn-note{
+  background:var(--amber-tint);border:1px solid #ecd9b6;border-radius:10px;padding:11px 14px;
+  font-size:12.5px;margin-top:13px;color:#7c4a10;
+}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--muted);gap:14px}
+.sum-row.total{font-size:15px;font-weight:700;color:var(--ink);border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
+
+/* pembayaran */
+.pay-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.qris{
+  width:180px;height:180px;margin:14px auto;border:1px solid var(--line);border-radius:12px;
+  display:grid;grid-template-columns:repeat(17,1fr);grid-template-rows:repeat(17,1fr);
+  padding:9px;background:#fff;gap:1px;
+}
+.qris i{border-radius:1px}
+.qris i.b{background:var(--ink)}
+.va-num{
+  font-size:20px;font-weight:700;letter-spacing:2px;background:var(--bg);border:1px dashed #c9ced4;
+  border-radius:12px;padding:12px;margin:14px 0;user-select:all;
+}
+.count-pill{
+  display:inline-flex;gap:7px;align-items:center;background:var(--amber-tint);color:var(--amber);
+  border-radius:999px;padding:5px 14px;font-weight:600;font-size:12px;
+}
+
+/* transaksi */
+.status-line{display:flex;flex-direction:column;margin-top:8px}
+.st-item{display:flex;gap:12px;align-items:flex-start;position:relative;padding-bottom:17px}
+.st-item::before{content:"";position:absolute;left:11px;top:26px;bottom:0;width:1.5px;background:var(--line)}
+.st-item:last-child::before{display:none}
+.st-item .dotp{
+  flex:none;width:23px;height:23px;border-radius:50%;display:grid;place-items:center;
+  font-size:10.5px;background:#eef0ef;color:var(--muted);z-index:1;font-weight:700;
+}
+.st-item.done .dotp{background:var(--tint);color:var(--green)}
+.st-item.now .dotp{background:var(--green);color:#fff}
+.st-item b{font-size:13px;display:block;font-weight:600}
+.st-item span{font-size:12px;color:var(--muted)}
+.order-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.order-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.order-top code{font-size:11.5px;font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:2px 9px;color:var(--muted)}
+.stat-badge{font-size:11px;font-weight:600;border-radius:7px;padding:3px 10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.sb-unpaid{background:var(--amber-tint);color:var(--amber)}
+.sb-held{background:var(--amber-tint);color:var(--amber)}
+.sb-move{background:var(--tint);color:var(--green)}
+.sb-check{background:var(--tint);color:var(--green)}
+.sb-done{background:var(--green);color:#fff}
+.sb-cod{background:#f1f3f4;color:var(--muted)}
+.order-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+/* ============ CHAT ============ */
+.chat-list-row{
+  display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:border-color .15s;
+}
+.chat-list-row:hover{border-color:var(--green)}
+.chat-list-row .ava{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ac,var(--tint));color:var(--green);font-weight:700}
+.chat-list-row .inf{flex:1;min-width:0}
+.chat-list-row b{font-size:13.5px;display:block;font-weight:600}
+.chat-list-row span{font-size:12px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-list-row .dot-unread{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
+.chat-thread{display:flex;flex-direction:column;gap:8px}
+.bubble{
+  max-width:82%;padding:9px 14px;border-radius:14px;font-size:13.5px;
+}
+.bubble.me{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:5px}
+.bubble.me small{color:rgba(255,255,255,.7)}
+.bubble.them{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px}
+.bubble small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.chat-input{display:flex;gap:8px}
+.chat-input input{
+  flex:1;border:1px solid var(--line);border-radius:999px;padding:10px 16px;font-family:inherit;
+  font-size:13.5px;outline:none;background:var(--card);min-width:0;
+}
+.chat-input input:focus{border-color:var(--green)}
+.chat-input button{
+  width:42px;height:42px;border-radius:50%;border:none;background:var(--green);
+  color:#fff;display:grid;place-items:center;flex:none;transition:background .15s;
+}
+.chat-input button:hover{background:var(--green-2)}
+
+/* ============ KULINER ============ */
+.resto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.resto-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);transition:box-shadow .15s;display:flex;flex-direction:column;
+}
+.resto-card:hover{box-shadow:var(--shadow-lg)}
+.resto-media{aspect-ratio:16/8;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.resto-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.resto-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:rgba(31,41,55,.82);color:#fff;
+  border-radius:8px;padding:3px 10px;font-weight:600;font-size:11px;
+}
+.resto-media .type-tag{position:absolute;left:12px;top:10px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:7px;padding:3px 10px;font-weight:600;font-size:11px;color:var(--muted)}
+.resto-body{padding:15px 17px 17px;display:flex;flex-direction:column;flex:1}
+.resto-body h4{font-size:15.5px;margin-bottom:2px}
+.resto-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+/* --- SIDE QUEST (misi berhadiah saldo) --- */
+.quest-banner{display:flex;align-items:center;gap:12px;background:var(--green);color:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:transform .15s}
+.quest-banner:hover{transform:translateY(-1px)}
+.quest-banner:active{transform:scale(.98)}
+.quest-banner b{font-size:14.5px}
+.quest-banner p{font-size:12px;opacity:.75;margin-top:2px}
+.quest-banner .q-go{margin-left:auto;background:var(--amber);color:#fff;border:none;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+.q-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.q-top b{font-size:15px}
+.q-reward{color:var(--amber);font-weight:800;white-space:nowrap}
+.q-desc{font-size:13px;color:var(--muted);margin-top:6px;white-space:pre-wrap}
+.q-foot{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.q-foot .btn{margin-left:auto}
+.q-badge{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px}
+.q-badge.ok{background:#e6f6ec;color:#0b8f4d}
+.q-badge.wait{background:#fff4e0;color:#b45309}
+.q-badge.no{background:#fdecec;color:#c0392b}
+.q-badge.full{background:var(--hover);color:var(--muted)}
+
+.menu-mini{border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:12px;background:var(--bg)}
+.menu-mini .mtitle{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.menu-line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.menu-line:last-child{border-bottom:none}
+.menu-line b{white-space:nowrap;font-weight:600}
+.resto-body .btn{margin-top:auto}
+.resto-info-row{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);padding:4px 0}
+
+/* ============ TOAST ============ */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  background:var(--ink);color:#fff;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:500;
+  box-shadow:var(--shadow-lg);animation:toastIn .25s ease;max-width:90vw;
+}
+@keyframes toastIn{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.view-tabs{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap}
+
+/* tab Pembelian/Penjualan */
+.seg-tabs{
+  display:flex;background:#eef0ef;border-radius:11px;padding:4px;gap:4px;margin-bottom:20px;max-width:420px;
+}
+.seg-tabs button{
+  flex:1;border:none;background:transparent;border-radius:8px;padding:9px 13px;
+  font-weight:600;font-size:13px;color:var(--muted);transition:all .15s;position:relative;
+}
+.seg-tabs button.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.seg-tabs button .count{
+  position:absolute;top:-4px;right:2px;min-width:17px;height:17px;border-radius:999px;
+  background:var(--amber);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;
+}
+
+/* indikator */
+.live-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  border-radius:999px;padding:3px 11px;background:var(--tint);color:var(--green);
+}
+.live-pill i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.mine-pill{
+  display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
+  border-radius:7px;padding:4px 11px;background:#f1f3f4;color:var(--muted);
+}
+
+/* ============ IKON & FOTO ============ */
+svg.ic{display:block;flex:none;width:16px;height:16px}
+.fab svg.ic{width:17px;height:17px}
+.icon-btn svg.ic{width:19px;height:19px}
+.bn-item svg.ic{width:22px;height:22px;margin-bottom:2px}
+.bn-sell svg.ic{width:22px;height:22px}
+.act svg.ic{width:13px;height:13px}
+.btn svg.ic{width:15px;height:15px}
+.photo-drop{
+  border:1px dashed #c9ced4;border-radius:12px;padding:20px;text-align:center;
+  cursor:pointer;background:var(--bg);font-weight:600;font-size:13px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:7px;transition:all .15s;
+}
+.photo-drop:hover{border-color:var(--green);color:var(--green)}
+.photo-drop svg.ic{width:24px;height:24px}
+.photo-prev{position:relative;margin-top:10px}
+.photo-prev img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+.photo-prev .x-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.95)}
+
+/* ============ LAYOUT TOKO (ala referensi Stuffsus) ============ */
+.top-nav{display:flex;gap:4px;margin:0 auto}
+.top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
+.top-nav button:hover{color:var(--ink);background:var(--hover)}
+.top-nav button.on{color:var(--ink);font-weight:800}
+/* tablet: nav 4 tombol harus tetap muat satu baris */
+@media(max-width:880px){.top-nav button{padding:8px 7px;font-size:13px}.head-actions{gap:6px}}
+.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px}
+.hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.55}
+.hero-text{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;text-align:center;pointer-events:none;padding:0 14px;
+}
+.hw-big{font-size:clamp(30px,6vw,54px);font-weight:800;letter-spacing:-.03em;text-shadow:0 2px 18px rgba(0,0,0,.4)}
+.hw-sub{font-size:clamp(12px,2vw,15.5px);font-weight:600;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-top:4px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.shop-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.shop-search{max-width:360px;flex:1;min-width:230px;background:var(--card);border:1px solid var(--line)}
+.go-cta{border:none;background:var(--ink);color:#fff;border-radius:999px;padding:8px 20px;font:inherit;font-weight:700;font-size:13px;flex:none}
+.shop-grid{display:grid;grid-template-columns:225px minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:118px}}
+.filter-side{position:sticky;top:110px}
+.filter-side h4{font-size:14.5px;font-weight:800;margin-bottom:8px}
+.fs-item{
+  display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;
+  font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 12px;
+  border-radius:10px;text-align:left;transition:all .13s;
+}
+.fs-item:hover{background:var(--hover);color:var(--ink)}
+.fs-item.on{background:var(--tint);color:var(--ink);font-weight:700}
+.fs-item .fc{margin-left:auto;background:var(--amber);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;min-width:20px;height:18px;display:grid;place-items:center;padding:0 6px}
+.fs-item svg{width:15px;height:15px;flex:none}
+
+/* kartu produk grid (ala referensi) */
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:13px}
+@media(max-width:680px){.feed{grid-template-columns:repeat(2,1fr);gap:9px}}
+.pcard{display:flex;flex-direction:column;cursor:pointer;min-width:0}
+.pcard-media{
+  position:relative;aspect-ratio:1/1;background:var(--tint);border-radius:14px;overflow:hidden;
+  display:grid;place-items:center;margin-bottom:7px;transition:transform .2s;
+}
+@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-3px)}}
+.pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pcard-media .cat-pill{
+  position:absolute;top:7px;right:7px;background:#fff;border-radius:999px;padding:3px 9px;
+  font-size:9.5px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);
+}
+.pcard-media .n-pill{position:absolute;left:9px;bottom:9px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:700}
+.pcard-row{display:flex;justify-content:space-between;gap:8px;align-items:baseline;min-width:0}
+.pcard-name{font-size:12px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
+.pcard-price{font-size:12px;font-weight:800;flex:none}
+.pcard-rate{font-size:10.5px;color:var(--muted);margin:2px 0 1px}
+.pcard-rate .st{color:var(--amber);font-weight:800}
+.pcard-seller{font-size:10.5px;color:var(--muted);margin-bottom:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pcard-btns{display:flex;gap:7px;margin-top:auto}
+.pcard-btns button{
+  flex:1;border-radius:999px;font:inherit;font-weight:700;font-size:11px;padding:7px 4px;
+  transition:all .15s;cursor:pointer;
+}
+.pb-out{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.pb-out:hover{border-color:var(--ink)}
+.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:var(--amber)}
+.pb-dark{background:var(--ink);border:1px solid var(--ink);color:#fff}
+.pb-dark:hover{background:#000}
+.pb-dark:disabled{opacity:.4}
+
+/* rekomendasi horizontal + panah */
+.reko{margin-top:26px}
+.reko-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.reko-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.rk-btn{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;transition:all .15s;margin-left:6px}
+.rk-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.reko-row{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding-bottom:4px}
+.reko-row::-webkit-scrollbar{display:none}
+.reko-row .pcard{flex:none;width:158px}
+
+/* banner CTA gelap */
+.cta-banner{
+  margin-top:26px;background:var(--ink);color:#fff;border-radius:16px;padding:20px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.cta-banner h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
+.cta-btn{border:none;background:#fff;color:var(--ink);border-radius:999px;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s}
+.cta-btn:active{transform:scale(.96)}
+
+/* footer */
+.foot{margin-top:26px;border-top:1px solid var(--line);padding:26px 4px 10px}
+.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:560px}
+.foot b{font-size:13.5px;display:block;margin-bottom:10px}
+.foot a,.foot span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;cursor:pointer}
+.foot a:hover{color:var(--ink)}
+.foot span{cursor:default}
+.foot-bot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:18px;padding-top:14px;font-size:11.5px;color:var(--muted)}
+
+/* stories versi kecil monokrom */
+/* ============ INTERAKTIVITAS ============ */
+.btn,.chip,.act,.fbact,.icon-btn,.lnav-item,.pay-opt,.login-btn,.ava-btn,.x-btn,.trend-card,.resto-card,.composer .ask{
+  transition:transform .15s ease,box-shadow .2s ease,background .15s ease,border-color .15s ease,color .15s ease,filter .15s ease;
+}
+.btn:active,.chip:active,.fbact:active,.icon-btn:active,.login-btn:active,.act:active,.composer .ask:active{transform:scale(.96)}
+.btn-coral:hover{box-shadow:0 8px 20px rgba(0,0,0,.22)}
+.post{transition:box-shadow .25s ease,transform .25s ease}
+@media(hover:hover){
+  .post:hover{box-shadow:var(--shadow-lg)}
+  .resto-card:hover{transform:translateY(-3px)}
+  .trend-card:hover{transform:translateY(-2px)}
+}
+.post-media img,.pd-media img,.resto-media img{animation:imgIn .45s ease}
+@keyframes imgIn{from{opacity:0;transform:scale(1.015)}to{opacity:1;transform:none}}
+.fbact.liked svg{animation:likePop .4s cubic-bezier(.2,2.2,.4,1)}
+.fbact.faved svg{animation:likePop .4s cubic-bezier(.2,2.2,.4,1)}
+@keyframes likePop{0%{transform:scale(.3)}65%{transform:scale(1.3)}100%{transform:scale(1)}}
+/* skeleton shimmer saat feed dimuat */
+.skel{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);padding-bottom:14px}
+.skel .s{background:linear-gradient(90deg,#ececec 25%,#f8f8f8 50%,#ececec 75%);background-size:200% 100%;animation:shimmer 1.1s infinite;border-radius:8px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.skel .s-head{width:45%;height:14px;margin:16px 16px 8px}
+.skel .s-line{width:70%;height:12px;margin:0 16px 14px}
+.skel .s-media{height:230px;border-radius:0;margin:0}
+.skel .s-foot{width:88%;height:34px;margin:14px 16px 0;border-radius:999px}
+
+/* ============ MOBILE ============ */
+@media(max-width:680px){
+  body{padding-bottom:72px}
+  .fab{display:none}
+  .hide-mobile{display:none!important}
+  .bottom-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:95;display:flex;justify-content:space-around;align-items:center;
+    background:var(--card);border-top:1px solid var(--line);
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+  }
+  .bn-item{
+    display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;font-weight:600;
+    color:var(--muted);background:none;border:none;position:relative;padding:2px 8px;
+  }
+  .bn-item .count{
+    position:absolute;top:-4px;right:1px;min-width:16px;height:16px;border-radius:999px;
+    background:var(--amber);color:#fff;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;
+  }
+  .bn-sell{
+    width:48px;height:48px;border-radius:50%;background:var(--green);border:none;
+    color:#fff;display:grid;place-items:center;margin-top:-22px;
+    box-shadow:var(--shadow-lg);flex:none;
+  }
+  .head-inner{gap:8px;height:54px}
+  .search{max-width:none}
+  .cat-bar{top:54px;padding:8px 0 7px}
+  .cat-scroll .chip{padding:7px 14px;font-size:12.5px}
+  .radius-row{padding:7px 2px 1px;font-size:11.5px}
+  .radius-row .chip.mini{padding:4px 11px;font-size:11px}
+  .main-grid{padding:12px 0 84px;gap:12px}
+  .composer{padding:10px 12px;margin-bottom:12px}
+  .composer .cam span{display:none}
+  .feed{gap:12px}
+  .post-price{font-size:17px}
+  .fbact{font-size:12.5px;gap:5px;padding:8px 2px}
+  .buy-row{padding:8px 12px 12px}
+  .post-cta .btn{min-width:0;padding:11px 13px;font-size:13px}
+  .modal{border-radius:14px;max-height:94vh}
+  .modal-head{padding:14px 16px;border-radius:14px 14px 0 0}
+  .modal-body{padding:16px 16px 20px}
+  .overlay{padding:10px}
+  .drawer{width:100vw;border-left:none}
+  .resto-grid{grid-template-columns:1fr}
+  .order-card{padding:14px}
+  .qris{width:164px;height:164px}
+  .va-num{font-size:16.5px;letter-spacing:1px}
+  #toasts{bottom:84px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="wrap head-inner">
+    <a href="#" class="logo" onclick="showView('feed');return false">
+      <span class="word">Lebak-Market<em>.</em></span>
+    </a>
+    <nav class="top-nav hide-mobile">
+      <button id="tn-feed" class="on" onclick="showView('feed')">Beranda</button>
+      <button id="tn-kuliner" onclick="showView('kuliner')">Jelajah</button>
+      <button id="tn-misi" onclick="showView('misi')">Misi</button>
+      <button id="tn-orders" onclick="showView('orders')">Transaksi</button>
+    </nav>
+    <div class="head-actions">
+      <button class="icon-btn hide-mobile" onclick="showView('feed');setTimeout(()=>document.getElementById('searchInput').focus(),150)" title="Cari">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn hide-mobile" onclick="openChatList()" title="Chat">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg>
+        <span id="chatCount" class="count hidden">0</span>
+      </button>
+      <button class="icon-btn hide-mobile" onclick="showView('orders')" title="Transaksi Saya">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span id="orderCount" class="count hidden">0</span>
+      </button>
+      <button class="icon-btn" onclick="openFavs()" title="Favorit">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <span id="favCount" class="count hidden">0</span>
+      </button>
+      <span id="authSlot"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CATEGORY + RADIUS ============ -->
+<div class="cat-bar" id="catBar">
+  <div class="wrap filter-bar">
+    <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="openLocPicker()" title="Atur lokasi">Mendeteksi lokasi…</b></span>
+    <button class="chip" id="filterBtn" onclick="openFilter()">
+      <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filter<span id="filterCount" class="count hidden" style="position:static;margin-left:2px"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ MAIN: LAYOUT TOKO (ala referensi) ============ -->
+<div class="wrap main-grid">
+  <main>
+    <div id="view-feed">
+      <div class="hero">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=60" alt="" onerror="this.remove()">
+        <div class="hero-text">
+          <span class="hw-big">Lebak Market.</span>
+          <span class="hw-sub">Marketplacena Urang Lebak</span>
+        </div>
+      </div>
+      <div class="shop-head">
+        <h2>Semua Kebutuhan Warga Lebak</h2>
+        <div class="search shop-search">
+          <input id="searchInput" type="text" placeholder="Cari di Lebak.market...">
+          <button class="go-cta" onclick="loadFeed()">Cari</button>
+        </div>
+      </div>
+      <div class="quest-banner" onclick="showView('misi')">
+        <div><b>Side Quest 💼</b><p>Kerjakan misi ringan dari Lebak.market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
+        <button class="q-go">Lihat Misi →</button>
+      </div>
+      <div class="shop-grid">
+        <aside class="filter-side">
+          <h4>Kategori</h4>
+          <div id="sideCats"></div>
+          <h4 style="margin-top:18px">Radius</h4>
+          <div id="sideRadius"></div>
+          <button class="btn btn-sm" style="width:100%;margin-top:16px" onclick="openLocPicker()">Atur Lokasi</button>
+        </aside>
+        <div class="shop-main">
+          <div class="feed" id="feed"></div>
+          <section id="trendWrap" class="reko hidden">
+            <div class="reko-head">
+              <h2>Rekomendasi untukmu</h2>
+              <div class="reko-nav">
+                <button class="rk-btn" onclick="rekoScroll(-1)" aria-label="Sebelumnya">←</button>
+                <button class="rk-btn" onclick="rekoScroll(1)" aria-label="Berikutnya">→</button>
+              </div>
+            </div>
+            <div class="reko-row" id="trending"></div>
+          </section>
+          <div class="cta-banner">
+            <div>
+              <h2>Siap Jualan di Lebak.market?</h2>
+              <p>Gratis posting, jangkau warga se-Kabupaten Lebak — dana aman lewat rekber.</p>
+            </div>
+            <button class="cta-btn" onclick="openSell()">+ Mulai Jualan</button>
+          </div>
+          <footer class="foot">
+            <div class="foot-grid">
+              <div>
+                <b>Tentang</b>
+                <a onclick="showView('misi')">Side Quest</a>
+                <a onclick="openInfoBiaya()">Biaya &amp; Komisi</a>
+                <a onclick="setJelajah('kuliner')">Kuliner Sekitar</a>
+                <a onclick="setJelajah('wisata')">Wisata Lebak</a>
+              </div>
+              <div>
+                <b>Belanja Aman</b>
+                <span>Dana ditahan rekber sampai barang sesuai</span>
+                <span>COD di tempat ramai, cek dulu baru bayar</span>
+                <span>Bermasalah? Komplain — dana tertahan</span>
+              </div>
+            </div>
+            <div class="foot-bot">
+              <span>© 2026 Lebak.market. All Rights Reserved.</span>
+              <span>Marketplace warga Kabupaten Lebak · <span id="appVer"></span></span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <div id="view-orders" class="hidden">
+      <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
+      <h2 style="margin-bottom:18px">Transaksi Saya</h2>
+      <div id="ordersList"></div>
+    </div>
+    <div id="view-kuliner" class="hidden">
+      <div class="view-tabs">
+        <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
+      </div>
+      <h2 id="jelajahTitle" style="margin-bottom:6px">Jelajah Lebak</h2>
+      <p id="jelajahDesc" style="color:var(--muted);font-size:14px;margin-bottom:14px"></p>
+      <div class="seg-tabs" style="max-width:340px">
+        <button id="jt-kuliner" onclick="setJelajah('kuliner')">Kuliner Sekitar</button>
+        <button id="jt-wisata" onclick="setJelajah('wisata')">Wisata Lebak</button>
+      </div>
+      <div id="wisataChips" class="view-tabs hidden" style="margin-bottom:14px"></div>
+      <div class="resto-grid" id="restoGrid"></div>
+    </div>
+    <div id="view-misi" class="hidden">
+      <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
+      <h2 style="margin-bottom:6px">Side Quest</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px">Kerjakan misi, kirim bukti, hadiah langsung masuk ke saldomu setelah di-ACC admin — bisa ditarik tunai atau dipakai belanja.</p>
+      <div id="questList" style="max-width:640px"></div>
+    </div>
+  </main>
+</div>
+
+<button class="fab" onclick="openSell()">
+  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Jual
+</button>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav">
+  <button class="bn-item" onclick="showView('feed')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+    Beranda
+  </button>
+  <button class="bn-item" onclick="showView('kuliner')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg>
+    Jelajah
+  </button>
+  <button class="bn-sell" onclick="openSell()" title="Jual">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="bn-item" onclick="showView('orders')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+    <span id="bnOrderCount" class="count hidden">0</span>
+    Transaksi
+  </button>
+  <button class="bn-item" onclick="openChatList()">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg>
+    <span id="bnChatCount" class="count hidden">0</span>
+    Chat
+  </button>
+</nav>
+
+<div id="toasts"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ================================================================
+   Lebak.market — frontend v4: foto produk asli, ikon SVG bersih,
+   avatar inisial. 100% postingan pengguna asli + realtime (SSE).
+   Jalankan:  cd server && npm install && npm start
+   ================================================================ */
+
+/* Versi build — tampil di footer & console utk memastikan HP memuat kode terbaru */
+const APP_VER = 'v1.3 (18 Jul 2026)';
+console.log('Lebak-Market ' + APP_VER);
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('appVer');
+  if (el) el.textContent = APP_VER;
+});
+
+/* ---------- IKON SVG (pengganti emoji) ---------- */
+const icon = (p, s = 15) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  like:  icon('<path d="M7 10v11"/><path d="M14.7 3.2 14 10h5.4a2 2 0 0 1 2 2.5l-1.7 6A2 2 0 0 1 17.8 20H7V10l3.6-7a2.4 2.4 0 0 1 4.1.2z"/>'),
+  heart: icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>'),
+  heartF:`<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`,
+  share: icon('<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>'),
+  chat:  icon('<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/>'),
+  send:  icon('<path d="m22 2-7 20-4-9-9-4z"/>', 17),
+  camera:icon('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 26),
+  bolt:  icon('<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>'),
+  pin:   icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>', 12),
+};
+
+/* ---------- KONSTANTA UI ---------- */
+const CATS = [
+  { id:'all',        label:'Semua' },
+  { id:'jasa',       label:'Jasa' },
+  { id:'makanan',    label:'Makanan' },
+  { id:'elektronik', label:'Elektronik' },
+  { id:'ternak',     label:'Peternakan' },
+  { id:'fashion',    label:'Fashion' },
+  { id:'kriya',      label:'Kriya Lebak' },
+];
+const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ternak:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
+const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ternak:'Peternakan', fashion:'Fashion', kriya:'Kriya Lebak' };
+const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
+let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
+let COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
+let KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
+const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
+const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
+const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
+function shipBreakdown(p, mode){
+  if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
+  const base = p.ship_cost != null ? p.ship_cost : shipCost(p); // ongkir tetap dari penjual (peternakan)
+  if (p.freeship) return { base, seller: base, subsidy: 0 };
+  const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
+  return { base, seller: 0, subsidy };
+}
+const AC = ['#e9f3ec','#f0efe9'];
+const acOf = id => AC[(id||0) % AC.length];
+const initOf = n => (String(n||'?').trim()[0] || '?').toUpperCase();
+const avaEl = (name, avatar) => avatar ? `<img src="${esc(avatar)}" alt="">` : initOf(name);
+let SELLER_COMM = 0.015; // dari /api/config
+
+/* ---------- API CLIENT ---------- */
+const store = {
+  get(k, d){ try { return JSON.parse(localStorage.getItem('lebak_'+k)) ?? d; } catch { return d; } },
+  set(k, v){ localStorage.setItem('lebak_'+k, JSON.stringify(v)); }
+};
+let token = store.get('token', null);
+let user  = store.get('user', null);
+async function api(path, { method = 'GET', body } = {}){
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = 'Bearer ' + token;
+  let res;
+  try {
+    res = await fetch('/api' + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch {
+    throw new Error('Backend tidak terhubung — jalankan: cd server && npm start');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok){
+    if (res.status === 401){ token = null; user = null; store.set('token', null); store.set('user', null); renderAuthSlot(); }
+    throw new Error(data.error || 'Terjadi kesalahan (' + res.status + ')');
+  }
+  return data;
+}
+
+/* ---------- STATE ---------- */
+let products  = [];
+let lastOrders = [], lastSales = [];
+let ordTab = 'beli';
+let favs      = new Set(store.get('favs', []));
+let activeCat = 'all';
+let radiusKm  = Infinity;
+let openThread = null;
+let chatPoll = null;
+let pendingReg = null;
+let es = null;
+let sellImgs = []; // galeri foto produk yang akan diposting (maks 5)
+
+const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
+const km = d => d === 0 ? 'Online' : d < 0.15 ? '±100 m' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
+
+/* ---------- LOKASI LIVE (GPS asli + filter akurasi) ----------
+ * Akurasi: fix kasar (perkiraan IP/Wi-Fi, radius ratusan meter–km) DIABAIKAN
+ * bila kita sudah pegang fix yang lebih presisi — jadi titik tidak "loncat".
+ * Tingkat akurasi (±meter) ditampilkan apa adanya di label. Kalau GPS
+ * perangkat tetap meleset (umum di laptop), pengguna bisa pilih lokasi
+ * manual per kecamatan lewat openLocPicker(). */
+let myLoc = store.get('loc', null);           // posisi terakhir {lat,lng}
+let myAcc = store.get('locAcc', null);        // akurasi fix tsb (meter)
+let locManual = store.get('locManual', null); // nama kecamatan bila pilih manual
+let kecCoords = {};                            // diisi dari /api/config
+let geoLive = false;
+let geoWatchId = null;
+function havKm(a, b){
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function setLocLabel(html){ document.getElementById('locLabel').innerHTML = html; }
+function locFallbackLabel(){
+  setLocLabel(user ? esc(user.kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(perkiraan — atur ▾)</span>'
+                   : 'Atur lokasi ▾');
+}
+// akurasi >5 km (tebakan IP di laptop) tidak informatif — tak usah ditampilkan
+const accLabel = () => myAcc && myAcc <= 5000 ? ` <span style="font-weight:600;color:var(--muted)">±${myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : Math.round(myAcc) + ' m'}</span>` : '';
+function startGeo(fromUser){
+  if (!navigator.geolocation){ setLocLabel('Perangkat tanpa GPS — atur manual ▾'); return; }
+  if (fromUser){ locManual = null; store.set('locManual', null); myAcc = null; toast('Mendeteksi posisi presisi…'); }
+  if (geoWatchId != null) navigator.geolocation.clearWatch(geoWatchId);
+  const opts = { enableHighAccuracy: true, maximumAge: 0, timeout: 25000 };
+  navigator.geolocation.getCurrentPosition(onGeoPos, () => {}, opts); // fix pertama secepatnya
+  geoWatchId = navigator.geolocation.watchPosition(onGeoPos, () => {
+    geoLive = false;
+    if (!myLoc) locFallbackLabel();
+    if (fromUser) toast('Izin lokasi ditolak — aktifkan di pengaturan browser/HP, atau pilih kecamatan manual');
+  }, opts);
+}
+function onGeoPos(pos){
+  if (locManual) return; // pengguna mengunci lokasi manual
+  const nl = { lat: +pos.coords.latitude.toFixed(6), lng: +pos.coords.longitude.toFixed(6) };
+  const nAcc = pos.coords.accuracy || 99999;
+  // buang fix yang jauh lebih kasar dari yang sudah ada dan masih di dalam
+  // radius ketidakpastiannya sendiri (ciri khas lokasi IP/Wi-Fi nyasar)
+  if (geoLive && myLoc && myAcc && nAcc > myAcc * 2 && nAcc > 250 && havKm(myLoc, nl) * 1000 < nAcc) return;
+  const moved = !myLoc || !geoLive || havKm(myLoc, nl) > 0.12 || (myAcc && nAcc < myAcc / 2);
+  myLoc = nl; myAcc = Math.round(nAcc); geoLive = true;
+  store.set('loc', myLoc); store.set('locAcc', myAcc);
+  if (!moved) return;
+  reverseLabel();
+  loadFeed(); // jarak & urutan feed dihitung ulang dari posisi baru
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderJelajah();
+}
+async function reverseLabel(){
+  if (!myLoc) return;
+  const live = accLabel() + ' <span class="live-pill" style="vertical-align:1px"><i></i> live</span>';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=id&lat=${myLoc.lat}&lon=${myLoc.lng}`);
+    const a = (await r.json()).address || {};
+    const place = a.road || a.neighbourhood || a.village || a.suburb || a.hamlet || '';
+    const area = a.village !== place && a.village ? a.village : (a.town || a.municipality || a.city_district || a.county || a.city || '');
+    setLocLabel(esc([place, area].filter(Boolean).join(', ') || 'Titik GPS ' + myLoc.lat.toFixed(4) + ', ' + myLoc.lng.toFixed(4)) + live);
+  } catch {
+    setLocLabel('Titik GPS ' + myLoc.lat.toFixed(4) + ', ' + myLoc.lng.toFixed(4) + live);
+  }
+}
+/* Pengaturan lokasi: deteksi ulang GPS presisi atau kunci manual per kecamatan */
+function openLocPicker(){
+  const kecs = Object.keys(kecCoords).length ? Object.keys(kecCoords) : KECAMATAN;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Atur Lokasimu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 14px">
+          Status: ${geoLive && !locManual ? `<b>GPS live aktif</b>${myAcc ? ' · akurasi ±' + (myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : myAcc + ' m') : ''}` : locManual ? `<b>Manual: Kec. ${esc(locManual)}</b>` : '<b>GPS belum aktif</b>'}
+        </div>
+        <button class="btn btn-coral" style="width:100%" onclick="closeModal();startGeo(true)">Deteksi Ulang — GPS Presisi Tinggi</button>
+        <div class="warn-note" style="margin-top:12px">Di laptop/PC posisi ditebak dari Wi-Fi/IP sehingga bisa meleset. Di HP: aktifkan GPS dan izin lokasi presisi.</div>
+        <label class="f" style="margin-top:16px">Atau kunci manual di kecamatanmu (GPS diabaikan)</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px">
+          ${kecs.map(k => `<button class="chip mini ${locManual===k?'active':''}" onclick="setManualLoc('${k}')">${k}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function setManualLoc(kec){
+  const c = kecCoords[kec];
+  if (!c) return toast('Koordinat kecamatan belum termuat — coba lagi');
+  locManual = kec; myLoc = { ...c }; myAcc = null; geoLive = false;
+  store.set('locManual', kec); store.set('loc', myLoc); store.set('locAcc', null);
+  setLocLabel(esc(kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
+  closeModal(); loadFeed();
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderJelajah();
+  toast('Lokasi diatur: Kec. ' + kec);
+}
+const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+const ago = t => {
+  const s = Math.floor((Date.now() - t)/1000);
+  if (s < 60) return 'baru saja';
+  if (s < 3600) return Math.floor(s/60) + ' mnt lalu';
+  if (s < 86400) return Math.floor(s/3600) + ' jam lalu';
+  return Math.floor(s/86400) + ' hari lalu';
+};
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3600);
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* thumbnail kecil: foto asli bila ada, kalau tidak inisial nama produk */
+const thumb = (img, name) => img
+  ? `<img class="thumb-img" src="${esc(img)}" alt="">`
+  : `<span class="letter-s">${initOf(name)}</span>`;
+
+/* ---------- REALTIME (SSE) ---------- */
+function connectSSE(){
+  if (es) { es.close(); es = null; }
+  if (!token) return;
+  es = new EventSource('/api/events?token=' + encodeURIComponent(token));
+  es.addEventListener('chat', e => {
+    const m = JSON.parse(e.data);
+    if (openThread && openThread.id === m.from.id) renderThread();
+    else toast('Pesan baru dari ' + m.from.name + ': ' + (m.text.length > 40 ? m.text.slice(0,40) + '…' : m.text));
+    refreshBadges();
+  });
+  es.addEventListener('order', e => {
+    const d = JSON.parse(e.data);
+    toast(d.orderId + ' → ' + d.status);
+    if (!document.getElementById('view-orders').classList.contains('hidden')) renderOrders();
+    refreshBadges();
+  });
+  es.addEventListener('product', e => {
+    const d = JSON.parse(e.data);
+    toast('Jualan baru dari ' + d.seller + ': ' + d.name);
+    if (!document.getElementById('view-feed').classList.contains('hidden')) loadFeed();
+  });
+}
+
+/* ---------- AUTH ---------- */
+function renderAuthSlot(){
+  const slot = document.getElementById('authSlot');
+  slot.innerHTML = user
+    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${avaEl(user.name, user.avatar)}</button>`
+    : `<button class="login-btn" onclick="openAuth('login')">Masuk</button>`;
+  // composer ala FB ikut menyapa pengguna
+  const ava = document.getElementById('composerAva'), ask = document.getElementById('composerAsk');
+  if (ava) ava.innerHTML = user ? avaEl(user.name, user.avatar) : '?';
+  if (ask) ask.textContent = user ? `Mau jual apa hari ini, ${user.name.split(' ')[0]}?` : 'Mau jual apa hari ini?';
+}
+function needLogin(action){
+  if (user && token) return false;
+  toast('Masuk dulu untuk ' + action);
+  openAuth('login');
+  return true;
+}
+function openAuth(tab, first){
+  const isReg = tab === 'register';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${isReg ? 'Daftar Akun' : 'Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="chip ${!isReg?'active':''}" onclick="openAuth('login')">Masuk</button>
+          <button class="chip ${isReg?'active':''}" onclick="openAuth('register')">Daftar Baru</button>
+        </div>
+        ${isReg ? `
+          <label class="f">Nama lengkap</label>
+          <input class="f" id="aName" placeholder="cth: Mongg Saputra">
+          <label class="f">Email aktif (kode verifikasi dikirim ke sini)</label>
+          <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
+          <label class="f">No. HP / WhatsApp</label>
+          <input class="f" id="aPhone" type="tel" placeholder="08xxxxxxxxxx">
+          <label class="f">Kecamatan (domisili di Lebak)</label>
+          <select class="f" id="aKec">${KECAMATAN.map(k => `<option>${k}</option>`).join('')}</select>
+          <label class="f">Password (min. 6 karakter)</label>
+          <input class="f" id="aPass" type="password" placeholder="••••••••">
+          <label class="f">Ulangi password</label>
+          <input class="f" id="aPass2" type="password" placeholder="••••••••">
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doRegister()">Daftar &amp; Verifikasi Email</button>
+        ` : `
+          <label class="f">Email</label>
+          <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
+          <label class="f">Password</label>
+          <input class="f" id="aPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doLogin()">Masuk</button>
+          <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">Belum punya akun? <a href="#" style="font-weight:800;color:var(--coral)" onclick="openAuth('register');return false">Daftar gratis →</a></p>
+          ${first ? `<button class="btn btn-sm" style="width:100%;margin-top:10px" onclick="closeModal()">Lihat-lihat dulu saja</button>` : ''}
+        `}
+      </div>
+    </div>
+  </div>`;
+}
+async function doRegister(){
+  const body = {
+    name: document.getElementById('aName').value.trim(),
+    email: document.getElementById('aEmail').value.trim().toLowerCase(),
+    phone: document.getElementById('aPhone').value.trim(),
+    kec: document.getElementById('aKec').value,
+    password: document.getElementById('aPass').value,
+  };
+  if (body.password !== document.getElementById('aPass2').value) return toast('Ulangan password tidak sama');
+  try {
+    const r = await api('/auth/register', { method:'POST', body });
+    // Akun langsung aktif & login — verifikasi email tinggal pelengkap
+    token = r.token; user = r.user;
+    store.set('token', token); store.set('user', user);
+    renderAuthSlot(); afterLogin();
+    pendingReg = { email: body.email };
+    openOtp();
+    if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode verifikasimu: ' + r.devCode), 700);
+  } catch (e) { toast(e.message); }
+}
+function openOtp(){
+  if (!pendingReg) return;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 14px">Akun sudah aktif — verifikasi email bisa dilakukan kapan saja.</div>
+        <div class="auth-hero">
+          <b>Cek email kamu</b>
+          <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> (berlaku 10 menit). Tidak ada? Cek folder spam.</p>
+        </div>
+        <label class="f">Kode verifikasi (6 digit)</label>
+        <input class="f" id="aOtp" inputmode="numeric" maxlength="6" placeholder="______"
+          style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
+          onkeydown="if(event.key==='Enter')verifyOtp()">
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi Email</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="closeModal()">Lewati — verifikasi nanti</button>
+        <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
+          Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
+        </p>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(() => document.getElementById('aOtp')?.focus(), 300);
+}
+async function resendOtp(){
+  if (!pendingReg) return;
+  try {
+    const r = await api('/auth/resend', { method:'POST', body:{ email: pendingReg.email } });
+    toast(r.devCode ? '[Mode pilot] Kode baru: ' + r.devCode : 'Kode baru dikirim ke emailmu');
+  } catch (e) { toast(e.message); }
+}
+async function verifyOtp(){
+  if (!pendingReg) return;
+  try {
+    const r = await api('/auth/verify', { method:'POST', body:{ email: pendingReg.email, code: document.getElementById('aOtp').value.trim() } });
+    token = r.token; user = r.user; pendingReg = null;
+    store.set('token', token); store.set('user', user);
+    renderAuthSlot(); closeModal(); afterLogin();
+    toast('Email terverifikasi');
+  } catch (e) { toast(e.message); }
+}
+/* Verifikasi ulang dari halaman akun (untuk yang tadinya melewati OTP) */
+async function reVerify(){
+  if (!user) return;
+  try {
+    const r = await api('/auth/resend', { method:'POST', body:{ email: user.email } });
+    pendingReg = { email: user.email };
+    openOtp();
+    if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode verifikasimu: ' + r.devCode), 700);
+  } catch (e) { toast(e.message); }
+}
+async function doLogin(){
+  try {
+    const r = await api('/auth/login', { method:'POST', body:{
+      email: document.getElementById('aEmail').value.trim().toLowerCase(),
+      password: document.getElementById('aPass').value,
+    }});
+    token = r.token; user = r.user;
+    store.set('token', token); store.set('user', user);
+    // refresh penuh agar seluruh tampilan (badge, feed, chat) bersih dari sesi lama
+    location.reload();
+  } catch (e) { toast(e.message); }
+}
+function doLogout(){
+  token = null; user = null;
+  store.set('token', null); store.set('user', null);
+  if (es) { es.close(); es = null; }
+  location.reload(); // refresh penuh — semua state sesi lama dibuang
+}
+function afterLogin(){
+  if (!geoLive && !myLoc) locFallbackLabel(); // label GPS live tidak ditimpa
+  connectSSE();
+  refreshBadges();
+  loadFeed();
+}
+async function openProfile(){
+  if (!user) return openAuth('login');
+  await refreshMe(); // saldo & status terbaru dari server
+  const myPosts = products.filter(p => p.seller_id === user.id).length;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Akun Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <span class="pf-ava">${avaEl(user.name, user.avatar)}</span>
+          <input type="file" id="avaFile" accept="image/*" style="display:none" onchange="onAvatar(event)">
+          <div style="margin-bottom:6px">
+            <button class="chip mini" onclick="document.getElementById('avaFile').click()">${user.avatar ? 'Ganti foto' : '+ Foto profil'}</button>
+            ${user.avatar ? '<button class="chip mini" onclick="delAvatar()">Hapus foto</button>' : ''}
+          </div>
+          <b>${esc(user.name)}</b>
+          <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · ${user.verified ? 'Email terverifikasi ✓' : 'Email belum diverifikasi'}</p>
+          ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
+        </div>
+        <div style="background:var(--tint);border:1px solid var(--tint-line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+          <div style="flex:1"><span style="font-size:12px;color:var(--muted);font-weight:600">Saldo Lebak.market</span>
+          <div style="font-size:22px;font-weight:800;color:var(--green)">${rupiah(user.balance || 0)}</div></div>
+          <button class="btn btn-coral btn-sm" onclick="openWallet()">Tarik / Riwayat</button>
+        </div>
+        ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
+        <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
+        <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('misi')"><span class="em g-5"><span class="letter-s">M</span></span><div><b>Side Quest</b><span>Kerjakan misi, hadiahnya masuk saldo</span></div></div>
+        <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Decode file gambar dengan andal. createImageBitmap men-decode penuh sebelum
+ * digambar ke canvas — mencegah hasil blank di beberapa browser Android yang
+ * memicu onload sebelum data piksel siap. Fallback: Image + await decode(). */
+async function decodeImageFile(file){
+  if (window.createImageBitmap){
+    try { return await createImageBitmap(file); } catch {}
+  }
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  try { await img.decode(); }
+  catch { URL.revokeObjectURL(img.src); throw new Error('File bukan gambar yang valid'); }
+  return img;
+}
+function releaseImg(img){
+  if (img.close) img.close();
+  else if (img.src) URL.revokeObjectURL(img.src);
+}
+
+/* foto profil di-crop kotak dari tengah agar rapi di lingkaran */
+async function cropSquareImage(file, size = 384){
+  const img = await decodeImageFile(file);
+  const sq = Math.min(img.width, img.height);
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
+  releaseImg(img);
+  return c.toDataURL('image/jpeg', 0.85);
+}
+async function onAvatar(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const img = await cropSquareImage(f);
+    const r = await api('/me/avatar', { method:'POST', body:{ img } });
+    user.avatar = r.avatar; store.set('user', user);
+    renderAuthSlot(); openProfile();
+    toast('Foto profil diperbarui');
+  } catch (err) { toast(err.message); }
+}
+async function delAvatar(){
+  try {
+    await api('/me/avatar', { method:'POST', body:{ img: null } });
+    user.avatar = null; store.set('user', user);
+    renderAuthSlot(); openProfile();
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- SALDO & PENARIKAN ---------- */
+async function openWallet(){
+  if (needLogin('membuka saldo')) return;
+  let w;
+  try { w = await api('/wallet'); } catch (e) { return toast(e.message); }
+  const kindLbl = { escrow_in:'Dana cair masuk', withdraw:'Penarikan', purchase:'Belanja pakai saldo', quest:'Hadiah misi' };
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Saldo Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">SALDO AKTIF</p>
+          <b style="font-size:28px;color:var(--green)">${rupiah(w.balance)}</b>
+          <p>Bisa ditarik ke rekening/e-wallet atau dipakai belanja lagi.</p>
+        </div>
+        <label class="f">Jumlah penarikan (min ${rupiah(w.minWithdraw)})</label>
+        <input class="f" id="wAmount" type="number" min="${w.minWithdraw}" max="${w.balance}" placeholder="cth: 50000">
+        <label class="f">Bank / E-wallet tujuan</label>
+        <input class="f" id="wBank" placeholder="cth: BRI, BANK JAGO, DANA, GOPAY">
+        <label class="f">Nomor rekening / No. HP</label>
+        <input class="f" id="wNum" inputmode="numeric" placeholder="cth: 1234567890 / 08xxxxxxxxxx">
+        <label class="f">Atas nama</label>
+        <input class="f" id="wName" placeholder="Nama pemilik rekening" value="${esc(user?.name || '')}">
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" ${w.balance < w.minWithdraw ? 'disabled' : ''} onclick="doWithdraw()">Tarik Saldo</button>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Diproses maks 1×24 jam.</p>
+        <div class="menu-mini" style="margin-top:16px">
+          <div class="mtitle">Riwayat saldo</div>
+          ${w.txns.length ? w.txns.map(t => `
+            <div class="menu-line"><span>${kindLbl[t.kind] || t.kind}${t.kind === 'withdraw' && t.status ? (t.status === 'Sukses' ? ' <span class="q-badge ok">Sukses ✓</span>' : ' <span class="q-badge wait">Diproses</span>') : ''}<br><small style="color:var(--muted)">${esc(t.note)} · ${new Date(t.at).toLocaleDateString('id-ID')}</small></span>
+            <b style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--amber)'};white-space:nowrap">${t.amount >= 0 ? '+' : '−'}${rupiah(Math.abs(t.amount))}</b></div>`).join('')
+          : '<div class="menu-line"><span>Belum ada transaksi saldo</span><b>—</b></div>'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function doWithdraw(){
+  const amount = document.getElementById('wAmount').value;
+  const bank = document.getElementById('wBank').value.trim();
+  const number = document.getElementById('wNum').value.trim();
+  const name = document.getElementById('wName').value.trim();
+  try {
+    const r = await api('/wallet/withdraw', { method:'POST', body:{ amount, bank, number, name } });
+    await refreshMe();
+    toast(r.message);
+    openWallet();
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- SIDE QUEST (misi berhadiah saldo) ---------- */
+let questCache = [], questImg = null;
+async function renderMisi(){
+  const box = document.getElementById('questList');
+  box.innerHTML = '<div class="qcard" style="color:var(--muted)">Memuat misi…</div>';
+  let d;
+  try { d = await api('/quests'); } catch (e) { box.innerHTML = `<div class="qcard">${esc(e.message)}</div>`; return; }
+  questCache = d.quests;
+  if (!d.quests.length){
+    box.innerHTML = '<div class="qcard" style="text-align:center;color:var(--muted)">Belum ada misi aktif — cek lagi nanti ya.</div>';
+    return;
+  }
+  box.innerHTML = d.quests.map(q => {
+    const st = q.mine?.status;
+    const badge = st === 'Disetujui' ? '<span class="q-badge ok">Selesai ✓ hadiah masuk saldo</span>'
+      : st === 'Menunggu ACC' ? '<span class="q-badge wait">Bukti dikirim — menunggu ACC</span>'
+      : st === 'Ditolak' ? '<span class="q-badge no">Bukti ditolak</span>'
+      : q.full ? '<span class="q-badge full">Kuota penuh</span>' : '';
+    const btn = (!st || st === 'Ditolak') && !q.full
+      ? `<button class="btn btn-coral btn-sm" onclick="openQuestSubmit(${q.id})">${st === 'Ditolak' ? 'Coba Lagi' : 'Kerjakan Misi'}</button>` : '';
+    return `
+    <div class="qcard">
+      <div class="q-top"><b>${esc(q.title)}</b><span class="q-reward">+${rupiah(q.reward)}</span></div>
+      ${q.descr ? `<p class="q-desc">${esc(q.descr)}</p>` : ''}
+      <div class="q-foot">
+        <span style="color:var(--muted);font-size:12px">${q.slots ? `${q.done}/${q.slots} slot terisi` : `${q.done} orang selesai`}</span>
+        ${badge}${btn}
+      </div>
+    </div>`;
+  }).join('');
+}
+function openQuestSubmit(id){
+  if (needLogin('mengerjakan misi')) return;
+  const q = questCache.find(x => x.id === id);
+  if (!q) return;
+  questImg = null;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Kerjakan Misi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <b>${esc(q.title)}</b>
+          <p>Hadiah <b style="color:var(--amber)">${rupiah(q.reward)}</b> masuk ke saldomu setelah bukti di-ACC admin.</p>
+        </div>
+        ${q.descr ? `<div class="menu-mini"><div class="mtitle">Instruksi</div><p style="font-size:13px;white-space:pre-wrap">${esc(q.descr)}</p></div>` : ''}
+        <label class="f">Keterangan / link hasil kerja</label>
+        <textarea class="f" id="qNote" rows="3" placeholder="cth: sudah komen pakai akun @punyaku — link: https://..."></textarea>
+        <label class="f">Screenshot bukti (disarankan)</label>
+        <input class="f" type="file" id="qFile" accept="image/*" onchange="onQuestImg(event)">
+        <div id="qPrev"></div>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="sendQuestProof(${q.id})">Kirim Bukti</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function onQuestImg(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    questImg = await compressImage(f);
+    document.getElementById('qPrev').innerHTML = `<img src="${questImg}" alt="bukti" style="max-width:140px;border-radius:10px;margin-top:8px;border:1px solid var(--line)">`;
+  } catch (err) { questImg = null; toast(err.message); }
+}
+async function sendQuestProof(id){
+  try {
+    const r = await api('/quests/' + id + '/submit', { method:'POST', body:{ note: document.getElementById('qNote').value, img: questImg } });
+    closeModal(); toast(r.message); renderMisi();
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- INFO BIAYA ---------- */
+async function openInfoBiaya(){
+  let rev = { total: 0, byKind: [] };
+  try { rev = await api('/revenue'); } catch {}
+  const kindLabel = { app_fee:'Biaya aplikasi', commission:'Komisi penjual', driver_cut:'Komisi driver', freeship_extra:'Program gratis ongkir', cod_fee:'Komisi COD' };
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Biaya &amp; Komisi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Rincian biaya platform:</p>
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
+        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — ${SELLER_COMM*100}%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
+        <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
+        <div class="mini-row"><span class="em g-2"><span class="letter-s">C</span></span><div><b>Komisi COD — ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)})</b><span>Dicatat sebagai tagihan penjual, dipotong otomatis dari pencairan rekber berikutnya</span></div></div>
+        <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
+        <div class="menu-mini" style="margin-top:14px">
+          <div class="mtitle">Pendapatan platform</div>
+          ${rev.byKind.length ? rev.byKind.map(r => `<div class="menu-line"><span>${kindLabel[r.kind]||r.kind} (${r.n}×)</span><b>${rupiah(r.amount)}</b></div>`).join('') : '<div class="menu-line"><span>Belum ada transaksi</span><b>Rp0</b></div>'}
+          <div class="menu-line" style="font-weight:800"><span>TOTAL</span><b>${rupiah(rev.total)}</b></div>
+        </div>
+        <div class="safe-note">Daftar, posting, dan chat gratis — biaya hanya saat transaksi.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- VIEWS ---------- */
+function showView(v){
+  ['feed','orders','kuliner','misi'].forEach(x => {
+    document.getElementById('view-'+x).classList.toggle('hidden', v !== x);
+    const tn = document.getElementById('tn-'+x);
+    if (tn) tn.classList.toggle('on', v === x);
+  });
+  document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
+  if (v === 'orders') renderOrders();
+  if (v === 'kuliner') renderJelajah();
+  if (v === 'misi') renderMisi();
+  window.scrollTo({ top: 0 });
+}
+function setJelajah(tab){ jelajahTab = tab; showView('kuliner'); }
+
+/* ---------- BARS & STORIES ---------- */
+function renderCats(){
+  const n = (activeCat !== 'all' ? 1 : 0) + (radiusKm !== Infinity ? 1 : 0);
+  const el = document.getElementById('filterCount');
+  el.textContent = n; el.classList.toggle('hidden', !n);
+  renderSideFilter();
+}
+/* sidebar kategori + radius (desktop, ala referensi) */
+function renderSideFilter(){
+  const sc = document.getElementById('sideCats');
+  if (!sc) return;
+  sc.innerHTML = CATS.map(c => {
+    const count = c.id === 'all' ? products.length : products.filter(p => p.cat === c.id).length;
+    return `<button class="fs-item ${activeCat === c.id ? 'on' : ''}" onclick="setCat('${c.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/></svg>
+      ${c.label}${activeCat === c.id && count ? `<span class="fc">${count}</span>` : ''}
+    </button>`;
+  }).join('');
+  document.getElementById('sideRadius').innerHTML = RADII.map(r =>
+    `<button class="fs-item ${radiusKm === r.v ? 'on' : ''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/></svg>
+      ${r.l}
+    </button>`).join('');
+}
+/* Filter terpadu: kategori + radius + lokasi dalam satu tempat */
+function openFilter(){
+  const catLbl = CATS.find(c => c.id === activeCat)?.label || 'Semua';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="filterModal">
+      <div class="modal-head"><h3>Filter</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <label class="f" style="margin-top:0">Kategori</label>
+        <div class="chip-wrap">${CATS.map(c =>
+          `<button class="chip ${activeCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('')}</div>
+        <label class="f">Radius dari lokasimu</label>
+        <div class="chip-wrap">${RADII.map(r =>
+          `<button class="chip ${radiusKm===r.v?'active':''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">${r.l}</button>`).join('')}</div>
+        <label class="f">Lokasi</label>
+        <button class="btn btn-sm" onclick="closeModal();openLocPicker()">Atur lokasi (GPS / manual)</button>
+        <div style="display:flex;gap:9px;margin-top:20px">
+          <button class="btn" style="flex:1" onclick="resetFilter()">Reset</button>
+          <button class="btn btn-coral" style="flex:2" onclick="closeModal()">Tampilkan Hasil</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function refreshFilterModal(){ if (document.getElementById('filterModal')) openFilter(); }
+function resetFilter(){ activeCat = 'all'; radiusKm = Infinity; renderCats(); loadFeed(); refreshFilterModal(); }
+function setCat(id){ activeCat = id; renderCats(); loadFeed(); refreshFilterModal(); }
+function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); refreshFilterModal(); }
+
+/* ---------- FEED ---------- */
+/* jasa = pengerjaan online: tanpa ongkir, tanpa COD/driver */
+const isJasaP = p => p.cat === 'jasa' || p.dist === 0;
+function perks(p){
+  const out = [];
+  if (p.lebak) out.push('<span class="perk pk-lokal">Lokal Lebak</span>');
+  if (isJasaP(p)){
+    out.push('<span class="perk pk-lokal">Jasa online — TANPA ONGKIR</span>');
+    out.push('<span class="perk pk-rekber">Rekber</span>');
+    return out.join('');
+  }
+  if (p.freeship) out.push('<span class="perk pk-cod">GRATIS ONGKIR</span>');
+  else if (p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
+  if (p.cod && p.dist <= COD_MAX_KM) out.push('<span class="perk pk-cod">Bisa COD</span>');
+  out.push('<span class="perk pk-rekber">Rekber</span>');
+  if (p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">Driver mulai 10rb</span>');
+  return out.join('');
+}
+
+let searchTimer = null;
+function searchInput(){ clearTimeout(searchTimer); searchTimer = setTimeout(loadFeed, 280); }
+
+const SKEL = `<article class="skel"><div class="s s-head"></div><div class="s s-line"></div><div class="s s-media"></div><div class="s s-foot"></div></article>`;
+async function loadFeed(){
+  const feedEl = document.getElementById('feed');
+  if (!products.length && !feedEl.children.length) feedEl.innerHTML = SKEL + SKEL;
+  const q = document.getElementById('searchInput').value.trim();
+  const params = new URLSearchParams();
+  if (activeCat !== 'all') params.set('cat', activeCat);
+  if (radiusKm !== Infinity) params.set('radius', radiusKm);
+  if (q) params.set('q', q);
+  if (myLoc){ params.set('lat', myLoc.lat); params.set('lng', myLoc.lng); }
+  try {
+    const r = await api('/products?' + params.toString());
+    products = r.products;
+    products.forEach(p => {
+      try { p.imgs = p.imgs ? JSON.parse(p.imgs) : (p.img ? [p.img] : []); }
+      catch { p.imgs = p.img ? [p.img] : []; }
+    });
+    renderFeed(); renderTrending(); renderSideFilter();
+  } catch (e) {
+    document.getElementById('feed').innerHTML =
+      `<div class="empty-feed"><h3>Backend belum jalan</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderFeed(){
+  const feed = document.getElementById('feed');
+  if (!products.length){
+    const filtered = activeCat !== 'all' || radiusKm !== Infinity || document.getElementById('searchInput').value.trim();
+    feed.innerHTML = filtered
+      ? `<div class="empty-feed"><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci.</p></div>`
+      : `<div class="empty-feed"><h3>Belum ada produk</h3>
+          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Jadilah penjual pertama di Lebak.market.</p>
+          <button class="btn btn-coral" onclick="openSell()">+ Posting Jualan</button>
+        </div>`;
+    return;
+  }
+  feed.innerHTML = products.map(p => pcardHTML(p)).join('');
+}
+
+/* kartu produk ala referensi: media abu, tag kategori, nama+harga, rating oranye, 2 tombol pill */
+function pcardHTML(p){
+  const mine = user && p.seller_id === user.id;
+  const faved = favs.has(p.id);
+  const out = p.stock <= 0;
+  return `
+  <article class="pcard" onclick="openProduct(${p.id})">
+    <div class="pcard-media">
+      ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+      <span class="cat-pill">${CAT_LABEL[p.cat] || p.cat}</span>
+      ${p.imgs && p.imgs.length > 1 ? `<span class="n-pill">${p.imgs.length} foto</span>` : ''}
+      ${out ? '<div class="sold-out"><b>HABIS</b></div>' : ''}
+    </div>
+    <div class="pcard-row"><span class="pcard-name">${esc(p.name)}</span><span class="pcard-price">${rupiah(p.price)}</span></div>
+    <div class="pcard-rate"><span class="st">★</span> ${p.likes} suka · ${km(p.dist)}${p.cond === 'bekas' ? ' · Bekas' : ''}</div>
+    <div class="pcard-seller">oleh ${esc(p.seller_name)} <span class="verif">✓</span>${mine ? ' (kamu)' : ''}</div>
+    <div class="pcard-btns">
+      <button class="pb-out ${faved ? 'on' : ''}" onclick="event.stopPropagation();toggleFav(${p.id})">${faved ? '♥ Tersimpan' : '♡ Favorit'}</button>
+      ${mine ? `<button class="pb-dark" disabled>Stok ${p.stock}</button>`
+             : `<button class="pb-dark" ${out ? 'disabled' : ''} onclick="event.stopPropagation();openBuy(${p.id})">Beli</button>`}
+    </div>
+  </article>`;
+}
+
+/* ---------- DETAIL PRODUK (modal ala e-commerce) ---------- */
+function openProduct(id, imgIdx = 0){
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const gal = p.imgs && p.imgs.length ? p.imgs : (p.img ? [p.img] : []);
+  const mainImg = gal[imgIdx] || gal[0] || null;
+  const mine = user && p.seller_id === user.id;
+  const faved = favs.has(p.id);
+  const out = p.stock <= 0;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Detail Produk</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="pd-media ${p.g}">
+        ${mainImg ? `<img src="${esc(mainImg)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
+        <span class="dist-tag">${km(p.dist)} darimu</span>
+        ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
+      </div>
+      ${gal.length > 1 ? `<div class="pd-thumbs">${gal.map((u, i) => `<img src="${esc(u)}" class="${i === imgIdx ? 'on' : ''}" onclick="openProduct(${p.id}, ${i})" alt="">`).join('')}</div>` : ''}
+      <div class="modal-body">
+        <div class="pd-price">${rupiah(p.price)}</div>
+        <div class="pd-name">${esc(p.name)}</div>
+        <div class="post-perks">${perks(p)}</div>
+        <div class="pd-meta">${ago(p.created_at)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span> · Stok ${p.stock}</div>
+        <p class="pd-desc">${esc(p.descr)}</p>
+        <div class="seller-row">
+          <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
+          <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(p.seller_name)} <span class="verif">✓</span></b>
+            <span style="font-size:12px;color:var(--muted);display:block">${esc(p.loc)} · ${km(p.dist)} dari posisimu</span></div>
+          ${mine ? '<span class="mine-pill">Kamu</span>'
+                 : `<button class="btn btn-sm" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
+        </div>
+        <div class="post-actions">
+          <button class="act ${p.liked?'liked':''}" onclick="likeFromDetail(${p.id})">${IC.like} ${p.likes} suka</button>
+          <button class="act ${faved?'liked':''}" onclick="favFromDetail(${p.id})">${faved?IC.heartF:IC.heart} ${faved?'Tersimpan':'Favorit'}</button>
+          <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
+        </div>
+        <div class="post-cta">
+          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>
+                    <button class="btn" style="color:#c0392b;border-color:#efc7c2" onclick="deleteProduct(${p.id})">Hapus Produk</button>`
+                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli Sekarang</button>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function deleteProduct(id){
+  if (!confirm('Hapus produk ini dari toko? Transaksi lama tetap tersimpan.')) return;
+  try {
+    await api('/products/' + id + '/delete', { method:'POST' });
+    closeModal(); await loadFeed();
+    toast('Produk dihapus');
+  } catch (e) { toast(e.message); }
+}
+async function likeFromDetail(id){
+  if (needLogin('menyukai postingan')) return;
+  await toggleLike(id);
+  openProduct(id);
+}
+function favFromDetail(id){
+  if (needLogin('menyimpan favorit')) return;
+  toggleFav(id);
+  openProduct(id);
+}
+
+async function toggleLike(id){
+  if (needLogin('menyukai postingan')) return;
+  try {
+    const r = await api('/products/' + id + '/like', { method:'POST' });
+    const p = products.find(x => x.id === id);
+    if (p){ p.liked = r.liked ? 1 : 0; p.likes = r.likes; }
+    renderFeed();
+  } catch (e) { toast(e.message); }
+}
+function toggleFav(id){
+  if (needLogin('menyimpan favorit')) return;
+  if (favs.has(id)) { favs.delete(id); toast('Dihapus dari favorit'); }
+  else { favs.add(id); toast('Masuk favorit'); }
+  store.set('favs', [...favs]);
+  updateBadges(); renderFeed();
+}
+
+function renderTrending(){
+  const wrap = document.getElementById('trendWrap');
+  const el = document.getElementById('trending');
+  const top = [...products].sort((a, b) => b.likes - a.likes).slice(0, 8);
+  wrap.classList.toggle('hidden', top.length < 2);
+  el.innerHTML = top.map(p => pcardHTML(p)).join('');
+}
+function rekoScroll(dir){
+  document.getElementById('trending').scrollBy({ left: dir * 240, behavior: 'smooth' });
+}
+
+
+function updateBadges(){
+  const fc = document.getElementById('favCount');
+  fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
+  const active = [...lastOrders, ...lastSales].filter(o => !o.status.startsWith('Selesai') && o.status !== 'Dibatalkan').length;
+  ['orderCount','bnOrderCount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = active; el.classList.toggle('hidden', !active); }
+  });
+}
+function setChatBadge(unread){
+  ['chatCount','bnChatCount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = unread; el.classList.toggle('hidden', !unread); }
+  });
+}
+async function refreshBadges(){
+  if (!token) return;
+  try {
+    const [o, s, c] = await Promise.all([api('/orders'), api('/sales'), api('/chats')]);
+    lastOrders = o.orders; lastSales = s.sales;
+    setChatBadge(c.chats.reduce((sm,x) => sm + (x.unread||0), 0));
+    updateBadges();
+  } catch {}
+}
+
+/* ---------- FAVORIT ---------- */
+function openFavs(){
+  if (needLogin('melihat favorit')) return;
+  const items = [...favs].map(id => products.find(p => p.id === id)).filter(Boolean);
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="drawer">
+      <div class="drawer-head"><h3>Favorit Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-body">
+        ${items.length ? items.map(p => `
+          <div class="fav-row">
+            <span class="em ${p.g}">${thumb(p.img, p.name)}</span>
+            <div class="inf"><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
+            <button class="btn btn-sm btn-coral" ${p.stock<=0 || (user && p.seller_id===user.id) ?'disabled':''} onclick="openBuy(${p.id})">Beli</button>
+            <button class="x-btn" style="width:30px;height:30px;font-size:12px" onclick="toggleFav(${p.id});openFavs()">✕</button>
+          </div>`).join('')
+        : `<div style="text-align:center;padding:50px 10px"><p style="color:var(--muted);font-weight:700">Belum ada favorit di daftar produk yang tampil.<br>Tekan tombol Favorit di barang yang kamu incar.</p></div>`}
+      </div>
+    </div>
+  </div>`;
+}
+function closeModal(){
+  openThread = null;
+  clearInterval(chatPoll); chatPoll = null;
+  document.getElementById('modalRoot').innerHTML = '';
+}
+
+/* ---------- CHAT ---------- */
+async function openChatWith(peerId, peerName){
+  if (needLogin('chat dengan penjual')) return;
+  openThread = { id: peerId, name: peerName };
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="drawer">
+      <div class="drawer-head">
+        <button class="x-btn" onclick="openChatList()" title="Semua chat">←</button>
+        <h3 style="flex:1;display:flex;align-items:center;gap:9px">
+          <span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:800;background:${acOf(peerId)};color:var(--green)">${initOf(peerName)}</span>
+          ${esc(peerName)} <span class="live-pill"><i></i> live</span>
+        </h3>
+        <button class="x-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="drawer-body"><div class="chat-thread" id="thread"></div></div>
+      <div class="drawer-foot">
+        <div class="chat-input">
+          <input id="chatMsg" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()" title="Kirim">${IC.send}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  await renderThread();
+  clearInterval(chatPoll);
+  chatPoll = setInterval(renderThread, 8000);
+}
+async function renderThread(){
+  const el = document.getElementById('thread');
+  if (!el || !openThread) return;
+  try {
+    const r = await api('/chats/' + openThread.id);
+    const stick = el.parentElement.scrollTop + el.parentElement.clientHeight >= el.parentElement.scrollHeight - 40;
+    el.innerHTML = r.messages.length
+      ? r.messages.map(m => `<div class="bubble ${m.from_me?'me':'them'}">${esc(m.text)}<small>${clock(m.at)}</small></div>`).join('')
+      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)}.<br><span style="font-size:11.5px;font-weight:600">Pesan terkirim realtime.</span></div>`;
+    if (stick) el.parentElement.scrollTop = el.parentElement.scrollHeight;
+  } catch {}
+}
+async function sendMsg(){
+  const inp = document.getElementById('chatMsg');
+  const text = inp.value.trim();
+  if (!text || !openThread) return;
+  inp.value = '';
+  try {
+    await api('/chats/' + openThread.id, { method:'POST', body:{ text } });
+    await renderThread();
+    const el = document.getElementById('thread');
+    if (el) el.parentElement.scrollTop = el.parentElement.scrollHeight;
+  } catch (e) { toast(e.message); }
+}
+async function openChatList(){
+  if (needLogin('membuka chat')) return;
+  openThread = null; clearInterval(chatPoll); chatPoll = null;
+  let chats = [];
+  try { chats = (await api('/chats')).chats; } catch (e) { toast(e.message); }
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="drawer">
+      <div class="drawer-head"><h3>Chat Kamu <span class="live-pill"><i></i> realtime</span></h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-body">
+        ${chats.length ? chats.map(c => `
+          <div class="chat-list-row" onclick="openChatWith(${c.peer.id}, '${esc(c.peer.name)}')">
+            <span class="ava" style="--ac:${acOf(c.peer.id)};font-weight:800">${avaEl(c.peer.name, c.peer.avatar)}</span>
+            <div class="inf"><b>${esc(c.peer.name)} · ${esc(c.peer.kec)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
+            ${c.unread ? '<span class="dot-unread"></span>' : ''}
+          </div>`).join('')
+        : `<div style="text-align:center;padding:50px 10px"><p style="color:var(--muted);font-weight:700">Belum ada obrolan.<br>Tekan tombol Chat di post penjual untuk mulai.</p></div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- BELI ---------- */
+let buy = {};
+function openBuy(id){
+  if (needLogin('membeli')) return;
+  const p = products.find(x => x.id === id);
+  if (!p || p.stock <= 0) return;
+  if (p.seller_id === user.id) return toast('Ini postinganmu sendiri');
+  buy = { pid: id, step: 1, mode: null, pay: null, name: user.name, addr:'', meet: MEET_POINTS[0], time:'' };
+  renderBuy();
+}
+function buyItemHTML(p){
+  return `<div class="buy-item"><span class="em ${p.g}">${thumb(p.img, p.name)}</span>
+    <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'Bekas':'Baru'} · ${km(p.dist)} (${esc(p.loc)})</span></div></div>`;
+}
+function renderBuy(){
+  const p = products.find(x => x.id === buy.pid);
+  const isJasa = isJasaP(p);
+  const codOk = !isJasa && p.cod && p.dist <= COD_MAX_KM;
+  const drvOk = !isJasa && p.dist <= DRIVER_MAX_KM;
+  const stepDots = `<div class="steps-ind">${[1,2,3].map(i => `<i class="${buy.step>=i?'on':''}"></i>`).join('')}</div>`;
+  let body = '';
+
+  if (buy.step === 1){
+    body = `${stepDots}${buyItemHTML(p)}
+      <p style="font-size:13px;font-weight:800;margin-bottom:12px">Mau transaksi dengan cara apa?</p>
+      <div class="pay-opt ${buy.mode==='rekber'?'sel':''}" onclick="buy.mode='rekber';renderBuy()">
+        <span class="ic" style="font-weight:800;font-size:13px">RK</span>
+        <div><b>Rekber + ${isJasa?'Pengerjaan Online':'Kirim Ekspedisi'}</b>
+        <span>Dana ditahan sistem sampai kamu konfirmasi ${isJasa?'hasil':'barang'} sesuai. Paling aman untuk jarak jauh.</span></div>
+        <span class="rad"></span>
+      </div>
+      <div class="pay-opt ${drvOk ? (buy.mode==='driver'?'sel':'') : 'off'}" ${drvOk?`onclick="buy.mode='driver';renderBuy()"`:''}>
+        <span class="ic" style="font-weight:800;font-size:13px">DR</span>
+        <div><b>Rekber + Driver Lebak <span class="badge" style="font-size:9.5px;vertical-align:middle">RESMI</span></b>
+        <span>${drvOk ? 'Diantar driver lokal hari ini (± ' + km(p.dist) + ', ongkos ' + rupiah(driverFee(p.dist)) + ' — tarif resmi mulai Rp10rb)'
+                      : isJasa ? 'Tidak relevan untuk jasa online' : 'Terlalu jauh (maks ' + DRIVER_MAX_KM + ' km)'}</span></div>
+        <span class="rad"></span>
+      </div>
+      <div class="pay-opt ${codOk ? (buy.mode==='cod'?'sel':'') : 'off'}" ${codOk?`onclick="buy.mode='cod';renderBuy()"`:''}>
+        <span class="ic" style="font-weight:800;font-size:13px">CO</span>
+        <div><b>COD Ketemuan</b>
+        <span>${codOk ? 'Gratis biaya. Ketemu langsung, cek barang, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
+                      : isJasa ? 'Tidak tersedia untuk jasa online' : !p.cod ? 'Penjual tidak membuka COD' : 'Di luar jangkauan COD (maks ' + COD_MAX_KM + ' km)'}</span></div>
+        <span class="rad"></span>
+      </div>
+      ${p.cond==='bekas' ? `<div class="warn-note">Barang bekas: cek kelengkapan & fungsi sebelum konfirmasi.</div>` : ''}
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.mode?'':'disabled'} onclick="buyNext()">Lanjut →</button>`;
+  }
+  else if (buy.step === 2 && buy.mode === 'cod'){
+    body = `${stepDots}${buyItemHTML(p)}
+      <label class="f">Titik temu (pilih tempat ramai &amp; aman)</label>
+      <select class="f" id="bMeet">${MEET_POINTS.map(m => `<option ${buy.meet===m?'selected':''}>${m}</option>`).join('')}</select>
+      <label class="f">Waktu janjian</label>
+      <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${esc(buy.time)}">
+      <div class="safe-note">Tips: ketemu di tempat ramai, cek barang sebelum bayar, jangan transfer DP.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">Buat Janjian COD</button>`;
+  }
+  else if (buy.step === 2){
+    body = `${stepDots}${buyItemHTML(p)}
+      <label class="f">Nama penerima</label>
+      <input class="f" id="bName" value="${esc(buy.name)}">
+      <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
+      <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: email / 08xx' : 'Jalan, kampung/perum, kecamatan, kode pos...'}">${esc(buy.addr)}</textarea>
+      ${buy.mode==='driver' && myLoc ? '<p style="font-size:11.5px;color:var(--muted);margin-top:6px">📍 Titik GPS-mu saat ini ikut disertakan agar driver mudah menemukan alamatmu.</p>' : ''}
+      ${buy.mode==='driver' ? `<div class="safe-note"><b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
+  }
+  else {
+    const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
+    const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
+    const fee = 0; // manual: kode unik ditambahkan server · saldo: gratis
+    const saldoNeed = p.price + shipPaid + APP_FEE; // bayar saldo = tanpa biaya layanan
+    const saldoOk = user && (user.balance || 0) >= saldoNeed;
+    body = `${stepDots}
+      <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
+      <div class="pay-opt ${buy.pay==='manual'?'sel':''}" onclick="buy.pay='manual';renderBuy()">
+        <span class="ic" style="font-weight:800;font-size:13px">TF</span>
+        <div><b>Transfer / QRIS</b><span>Bayar ke QRIS/rekening toko lalu unggah bukti · verifikasi oleh admin</span></div>
+        <span class="rad"></span>
+      </div>
+      <div class="pay-opt ${saldoOk ? (buy.pay==='saldo'?'sel':'') : 'off'}" ${saldoOk?`onclick="buy.pay='saldo';renderBuy()"`:''}>
+        <span class="ic" style="font-weight:800;font-size:13px">S</span>
+        <div><b>Saldo Lebak.market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
+        <span class="rad"></span>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-top:14px">
+        <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':p.ship_cost!=null?'Ongkir (ditetapkan penjual)':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
+        ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
+        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
+        <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
+        ${buy.pay==='manual'
+          ? `<div class="sum-row"><span>Kode unik (untuk pencocokan transfer)</span><span>Rp1–499</span></div>`
+          : `<div class="sum-row"><span>Biaya layanan (Saldo — gratis)</span><span>Rp0</span></div>`}
+        <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
+      </div>
+      <div class="safe-note">Dana ditahan sistem dan cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">Bayar ke Rekber</button>`;
+  }
+
+  const titles = { 1:'Cara Transaksi', 2: buy.mode==='cod' ? 'Atur Janjian COD' : 'Data Pengiriman', 3:'Pembayaran Rekber' };
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${titles[buy.step]}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">${body}</div>
+    </div>
+  </div>`;
+}
+function buyNext(){
+  if (buy.step === 2){
+    buy.name = document.getElementById('bName').value.trim();
+    buy.addr = document.getElementById('bAddr').value.trim();
+    if (!buy.name || !buy.addr) { toast('Isi dulu nama & alamat/kontaknya'); return; }
+    buy.step = 3;
+  } else buy.step = 2;
+  renderBuy();
+}
+async function placeCod(){
+  buy.meet = document.getElementById('bMeet').value;
+  buy.time = document.getElementById('bTime').value.trim();
+  if (!buy.time) { toast('Isi waktu janjiannya dulu'); return; }
+  try {
+    await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time, buyerLat: myLoc?.lat, buyerLng: myLoc?.lng } });
+    closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+    toast('Janjian COD dibuat');
+  } catch (e) { toast(e.message); }
+}
+async function placeRekber(){
+  try {
+    const r = await api('/orders', { method:'POST', body:{
+      productId: buy.pid, mode: buy.mode, payMethod: buy.pay,
+      recvName: buy.name, recvAddr: buy.addr,
+      buyerLat: myLoc?.lat, buyerLng: myLoc?.lng,
+    }});
+    await refreshBadges();
+    if (r.payment && r.payment.paid){
+      // dibayar pakai saldo — langsung lunas, tanpa halaman pembayaran
+      await refreshMe();
+      closeModal(); await loadFeed(); ordTab = 'beli'; showView('orders');
+      toast('Dibayar pakai saldo — dana ditahan rekber');
+      return;
+    }
+    openPayment(r.order, r.payment);
+  } catch (e) { toast(e.message); }
+}
+/* segarkan data akun (saldo dll.) dari server */
+async function refreshMe(){
+  if (!token) return;
+  try { user = (await api('/me')).user; store.set('user', user); renderAuthSlot(); } catch {}
+}
+
+/* ---- PEMBAYARAN ---- */
+function openPayment(o, payment){
+  if (o.method_id === 'vpay') return openVpayPay(o, payment);
+  if (o.method_id === 'manual') return openManualPay(o);
+  toast('Metode pembayaran pesanan lama tidak tersedia — silakan pesan ulang');
+}
+
+/* QRIS dinamis VPay: tampilkan QR + polling status otomatis, tanpa upload bukti */
+let vpayPoll = null;
+function openVpayPay(o, payment){
+  clearInterval(vpayPoll);
+  const err = payment && payment.error;
+  const qrImage = (payment && payment.qrImage) || o.pay_url;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this){clearInterval(vpayPoll);closeModal()}">
+    <div class="modal">
+      <div class="modal-head"><h3>Pembayaran QRIS</h3><button class="x-btn" onclick="clearInterval(vpayPoll);closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="pay-box">
+          <p style="font-size:13px;color:var(--muted)">Order <b>${o.id}</b></p>
+          <h2 style="margin:10px 0 2px">${rupiah(o.total)}</h2>
+          ${err
+            ? `<p style="font-size:12.5px;color:#dc2626;font-weight:600;margin-top:8px">Gagal membuat QRIS otomatis: ${esc(err)}. Hubungi admin.</p>`
+            : `<p style="font-size:12.5px;color:var(--amber);font-weight:600">Scan QRIS ini pakai GoPay/OVO/DANA/m-banking apa saja — jumlah sudah termasuk kode unik.</p>
+               <img src="${esc(qrImage)}" alt="QRIS VPay" style="width:220px;max-width:100%;margin:14px auto 4px;display:block;border:1px solid var(--line);border-radius:12px">
+               <p id="vpayStatus" style="font-size:12.5px;color:var(--muted);margin-top:10px">⏳ Menunggu pembayaran — halaman ini otomatis update begitu terbayar.</p>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
+  if (!err) vpayPoll = setInterval(() => checkVpayStatus(o.id), 5000);
+}
+async function checkVpayStatus(orderId){
+  try {
+    const r = await api('/orders/' + orderId + '/vpay-status');
+    if (r.status === 'paid'){
+      clearInterval(vpayPoll);
+      closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+      toast('Pembayaran diterima — dana ditahan rekber 🎉');
+    } else if (r.status === 'expired' || r.status === 'Dibatalkan'){
+      clearInterval(vpayPoll);
+      const el = document.getElementById('vpayStatus');
+      if (el) el.innerHTML = '⌛ QRIS kedaluwarsa — pesanan dibatalkan, silakan pesan ulang.';
+    }
+  } catch (e) { /* diam saja, coba lagi di polling berikutnya */ }
+}
+async function openManualPay(o){
+  let cfg = {};
+  try { cfg = await api('/paycfg'); } catch {}
+  const waiting = o.status === 'Menunggu Verifikasi';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Pembayaran Transfer / QRIS</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="pay-box">
+          <p style="font-size:13px;color:var(--muted)">Order <b>${o.id}</b></p>
+          <h2 style="margin:10px 0 2px">${rupiah(o.total)}</h2>
+          <p style="font-size:12.5px;color:var(--amber);font-weight:600">Transfer PERSIS sejumlah ini — 3 digit terakhir adalah kode unik pesananmu.</p>
+          ${cfg.qris ? `<img src="${esc(cfg.qris)}" alt="QRIS" style="width:220px;max-width:100%;margin:14px auto 4px;display:block;border:1px solid var(--line);border-radius:12px">` : ''}
+          ${cfg.info ? `<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;text-align:left;white-space:pre-wrap">${esc(cfg.info)}</div>` : (!cfg.qris ? '<p style="font-size:12.5px;color:var(--muted);margin-top:10px">Tujuan pembayaran belum diatur admin.</p>' : '')}
+        </div>
+        ${waiting
+          ? `<div class="safe-note" style="margin-top:14px">Bukti pembayaran sudah terkirim — menunggu verifikasi admin. Status berubah otomatis setelah diverifikasi.</div>`
+          : `<input type="file" id="proofFile" accept="image/*" style="display:none" onchange="sendProof(event,'${o.id}')">
+             <button class="btn btn-coral" style="width:100%;margin-top:14px" onclick="document.getElementById('proofFile').click()">Saya Sudah Bayar — Unggah Bukti</button>
+             <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Pesanan diproses setelah pembayaran diverifikasi (maks beberapa jam).</p>`}
+      </div>
+    </div>
+  </div>`;
+}
+async function sendProof(e, orderId){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const img = await compressImage(f);
+    await api('/orders/' + orderId + '/proof', { method:'POST', body:{ img } });
+    closeModal(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+    toast('Bukti terkirim — menunggu verifikasi admin');
+  } catch (err) { toast(err.message); }
+}
+
+/* ---------- AKSI PESANAN ---------- */
+async function shipOrder(orderId){
+  try {
+    await api('/orders/' + orderId + '/ship', { method:'POST' });
+    toast('Status pesanan diperbarui');
+    await refreshBadges(); renderOrders();
+  } catch (e) { toast(e.message); }
+}
+async function confirmDone(orderId){
+  try {
+    const r = await api('/orders/' + orderId + '/confirm', { method:'POST' });
+    if (r.payout) toast('Dana ' + rupiah(r.payout.net) + ' cair ke saldo penjual');
+    else toast('Transaksi COD selesai');
+    await refreshBadges(); renderOrders();
+  } catch (e) { toast(e.message); }
+}
+async function complain(orderId){
+  try {
+    await api('/orders/' + orderId + '/complain', { method:'POST' });
+    toast('Komplain dibuka — dana ditahan sementara');
+    renderOrders();
+  } catch (e) { toast(e.message); }
+}
+
+async function cancelOrder(orderId){
+  if (!confirm('Batalkan pesanan ini?')) return;
+  try {
+    await api('/orders/' + orderId + '/cancel', { method:'POST' });
+    await refreshBadges(); renderOrders();
+    toast('Pesanan dibatalkan — bisa dihapus dari riwayat');
+  } catch (e) { toast(e.message); }
+}
+async function hideOrder(orderId){
+  if (!confirm('Hapus transaksi ini dari riwayatmu? (pihak lain masih bisa melihat miliknya)')) return;
+  try {
+    await api('/orders/' + orderId + '/hide', { method:'POST' });
+    await refreshBadges(); renderOrders();
+    toast('Dihapus dari riwayat');
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- ORDERS VIEW ---------- */
+const STAT_CLASS = {
+  'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
+  'Dikirim':'sb-move','Diantar Driver':'sb-move','Hasil Dikirim':'sb-move',
+  'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid', 'Menunggu Verifikasi':'sb-held',
+  'Selesai — Dana Cair':'sb-done','Selesai':'sb-done','Dibatalkan':'sb-cod',
+};
+const CONFIRMABLE = ['Dikirim','Diantar Driver','Hasil Dikirim'];
+function setOrdTab(t){ ordTab = t; renderOrders(); }
+
+function orderCard(o, asSeller){
+  const shippable = asSeller && o.status === 'Dana Ditahan (Rekber)';
+  const isJasa = o.cat === 'jasa' || o.dist === 0;
+  return `
+  <div class="order-card">
+    <div class="order-top">
+      <code>${o.id}</code>
+      <span class="stat-badge ${STAT_CLASS[o.status]||''}">${o.status}</span>
+    </div>
+    <div class="mini-row">
+      <span class="em ${o.g}">${thumb(o.img, o.pname)}</span>
+      <div><b>${esc(o.pname)}</b>
+        <span>${rupiah(o.price)} · ${asSeller ? 'Pembeli: ' + esc(o.buyer_name) : 'Penjual: ' + esc(o.seller_name)} · ${o.mode==='cod'?'COD':o.mode==='driver'?'Driver + Rekber':'Rekber'}</span></div>
+      <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">Chat</button>
+    </div>
+    ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Titik temu: ${esc(o.meet_point)} · ${esc(o.meet_time)}</p>` : ''}
+    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}${o.buyer_lat ? ` · <a href="https://maps.google.com/?q=${o.buyer_lat},${o.buyer_lng}" target="_blank" rel="noopener" style="color:var(--amber);font-weight:700">📍 Lokasi GPS pembeli</a>` : ''}</p>` : ''}
+    <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
+    <div class="status-line" style="margin-top:16px">
+      ${o.events.map((tl,i) => `
+        <div class="st-item ${i < o.events.length-1 || o.status.startsWith('Selesai') ? 'done' : 'now'}">
+          <span class="dotp">${i < o.events.length-1 || o.status.startsWith('Selesai') ? '✓' : '•'}</span>
+          <div><b>${tl.status}</b><span>${tl.note}</span></div>
+        </div>`).join('')}
+    </div>
+    <div class="order-btns">
+      ${!asSeller && ['Menunggu Pembayaran','Menunggu Verifikasi'].includes(o.status) ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, status:o.status, pay_url:o.pay_url})})'>${o.status==='Menunggu Verifikasi'?'Lihat Status Bayar':'Bayar Sekarang'}</button>` : ''}
+      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-sm" onclick="cancelOrder('${o.id}')">Batalkan</button>` : ''}
+      ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
+      ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
+      ${!asSeller && CONFIRMABLE.includes(o.status) ? `
+        <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Diterima &amp; Sesuai — Cairkan Dana</button>
+        <button class="btn btn-sm" onclick="complain('${o.id}')">Ajukan Komplain</button>` : ''}
+      ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Sudah Ketemu &amp; Barang Oke</button>` : ''}
+      ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via chat</span>` : ''}
+      ${['Selesai','Selesai — Dana Cair','Dibatalkan'].includes(o.status) ? `<button class="btn btn-sm" onclick="hideOrder('${o.id}')">Hapus dari Riwayat</button>` : ''}
+    </div>
+  </div>`;
+}
+
+async function renderOrders(){
+  const el = document.getElementById('ordersList');
+  if (!token){ el.innerHTML = `<div class="empty-feed"><h3>Masuk dulu yuk</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Transaksimu tersimpan aman di server.</p><button class="btn btn-coral" onclick="openAuth('login')">Masuk / Daftar</button></div>`; return; }
+  try {
+    const [o, s] = await Promise.all([api('/orders'), api('/sales')]);
+    lastOrders = o.orders; lastSales = s.sales;
+  } catch (e) { el.innerHTML = `<div class="empty-feed"><h3>${esc(e.message)}</h3></div>`; return; }
+  updateBadges();
+  const needShip = lastSales.filter(x => x.status === 'Dana Ditahan (Rekber)').length;
+  const tabs = `
+    <div class="seg-tabs">
+      <button class="${ordTab==='beli'?'active':''}" onclick="setOrdTab('beli')">Pembelian (${lastOrders.length})</button>
+      <button class="${ordTab==='jual'?'active':''}" onclick="setOrdTab('jual')">Penjualan (${lastSales.length})${needShip?`<span class="count">${needShip}</span>`:''}</button>
+    </div>`;
+  const list = ordTab === 'beli' ? lastOrders : lastSales;
+  el.innerHTML = tabs + (list.length
+    ? list.map(x => orderCard(x, ordTab === 'jual')).join('')
+    : `<div class="empty-feed">
+        <h3>${ordTab==='beli'?'Belum ada pembelian':'Belum ada yang membeli daganganmu'}</h3>
+        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed.':'Pesanan dari pembeli akan tampil di sini.'}</p>
+        <button class="btn btn-coral" onclick="${ordTab==='beli'?`showView('feed')`:'openSell()'}">${ordTab==='beli'?'Ke Feed →':'+ Posting Jualan'}</button>
+      </div>`);
+}
+
+/* ---------- JELAJAH: tab Kuliner (OSM) & Wisata Lebak ---------- */
+let jelajahTab = 'kuliner';
+function renderJelajah(){
+  const kul = jelajahTab === 'kuliner';
+  document.getElementById('jt-kuliner').classList.toggle('active', kul);
+  document.getElementById('jt-wisata').classList.toggle('active', !kul);
+  document.getElementById('jelajahTitle').textContent = kul ? 'Kuliner & Nongkrong di Sekitarmu' : 'Destinasi Wisata Kabupaten Lebak';
+  document.getElementById('jelajahDesc').innerHTML = kul
+    ? 'Tempat makan di sekitarmu — data OpenStreetMap.'
+    : 'Pantai, curug, pegunungan, dan budaya se-Kabupaten Lebak — lengkap dengan jarak dan rute.';
+  document.getElementById('wisataChips').classList.toggle('hidden', kul);
+  if (kul) renderRestos(); else renderWisata();
+}
+
+/* ---------- KULINER (tempat asli dari OpenStreetMap, sekitar lokasi live) ---------- */
+let restos = [], restosAt = null; // posisi saat data terakhir diambil
+const OSM_TYPE = { restaurant:'Resto', cafe:'Cafe', fast_food:'Cepat Saji', food_court:'Food Court', ice_cream:'Es Krim' };
+const OVERPASS_MIRRORS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+async function fetchNearbyFood(loc){
+  const q = `[out:json][timeout:25];
+    nwr["amenity"~"^(restaurant|cafe|fast_food|food_court|ice_cream)$"]["name"](around:15000,${loc.lat},${loc.lng});
+    out center 80;`;
+  let lastErr;
+  for (const url of OVERPASS_MIRRORS){
+    try {
+      const r = await fetch(url, { method:'POST', body:'data=' + encodeURIComponent(q), headers:{ 'Content-Type':'application/x-www-form-urlencoded' } });
+      if (!r.ok) throw new Error('Overpass ' + r.status);
+      const els = (await r.json()).elements || [];
+      return els.map(e => {
+        const t = e.tags || {};
+        const lat = e.lat ?? e.center?.lat, lng = e.lon ?? e.center?.lon;
+        if (!t.name || lat == null) return null;
+        const addr = t['addr:full'] || [t['addr:street'], t['addr:housenumber']].filter(Boolean).join(' No. ') || '';
+        return {
+          id: e.type + '/' + e.id, name: t.name, lat, lng,
+          type: OSM_TYPE[t.amenity] || 'Tempat Makan',
+          cuisine: (t.cuisine || '').split(';')[0].replace(/_/g,' '),
+          addr, open: t.opening_hours || '', phone: t.phone || t['contact:phone'] || '',
+          g: 'g-' + (1 + Math.abs(e.id) % 6),
+        };
+      }).filter(Boolean);
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Peta tidak dapat dihubungi');
+}
+async function renderRestos(){
+  const grid = document.getElementById('restoGrid');
+  if (!myLoc){
+    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Aktifkan lokasi dulu</h3>
+      <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Izinkan akses lokasi untuk menampilkan tempat makan di sekitarmu.</p>
+      <button class="btn btn-coral" onclick="startGeo(true)">Izinkan Akses Lokasi</button></div>`;
+    return;
+  }
+  if (!restos.length || !restosAt || havKm(restosAt, myLoc) > 1){
+    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Mencari tempat makan di sekitarmu…</h3></div>`;
+    try { restos = await fetchNearbyFood(myLoc); restosAt = { ...myLoc }; }
+    catch (e) { grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Peta tidak dapat dihubungi</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)} — coba lagi sebentar lagi.</p></div>`; return; }
+  }
+  restos.forEach(r => { r.dist = havKm(myLoc, r); });
+  restos.sort((a, b) => a.dist - b.dist);
+  grid.innerHTML = (restos.length ? restos.map(r => `
+    <div class="resto-card">
+      <div class="resto-media ${r.g}">
+        <span class="letter">${initOf(r.name)}</span>
+        <span class="type-tag">${r.type}${r.cuisine ? ' · ' + esc(r.cuisine) : ''}</span>
+        <span class="dist-tag">${km(r.dist)}</span>
+      </div>
+      <div class="resto-body">
+        <h4>${esc(r.name)}</h4>
+        <div class="resto-meta">${[r.addr, r.open ? 'Buka: ' + r.open : ''].filter(Boolean).map(esc).join(' · ') || 'Alamat belum terdata di peta'}</div>
+        <button class="btn btn-yellow btn-sm" onclick="openResto('${r.id}')">Detail &amp; Petunjuk Arah</button>
+      </div>
+    </div>`).join('')
+  : `<div class="empty-feed" style="grid-column:1/-1"><h3>Belum ada tempat makan terdata</h3><p style="color:var(--muted);font-size:14px">Belum ada data tempat makan dalam radius 15 km dari posisimu.</p></div>`)
+  + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Data: © OpenStreetMap contributors</p>`;
+}
+function openResto(id){
+  const r = restos.find(x => x.id === id);
+  if (!r) return;
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`;
+  const osm = `https://www.openstreetmap.org/${r.id}`;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${esc(r.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="resto-info-row"><span><b>${r.type}</b>${r.cuisine ? ' · ' + esc(r.cuisine) : ''}</span></div>
+        <div class="resto-info-row"><span>${r.addr ? esc(r.addr) + ' — ' : ''}<b>${km(r.dist)} dari posisimu (live)</b></span></div>
+        ${r.open ? `<div class="resto-info-row"><span>Jam buka: ${esc(r.open)}</span></div>` : ''}
+        ${r.phone ? `<div class="resto-info-row"><span>Telp: <a href="tel:${esc(r.phone)}" style="font-weight:700">${esc(r.phone)}</a></span></div>` : ''}
+        <div class="safe-note" style="margin-top:14px">Sumber data: <a href="${osm}" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">OpenStreetMap</a></div>
+        <a class="btn btn-coral" style="width:100%;margin-top:16px" href="${gmaps}" target="_blank" rel="noopener">Petunjuk Arah (Google Maps)</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- WISATA LEBAK (destinasi nyata, jarak live, foto Wikimedia) ---------- */
+const WISATA = [
+  { name:'Pantai Sawarna (Ciantir)', kec:'Bayah', cat:'Pantai', lat:-6.9873, lng:106.3079, desc:'Pantai pasir putih paling terkenal di Lebak — ombak kelas dunia untuk surfing, sunset memukau, desa wisata dengan banyak homestay murah.', q:'Pantai Sawarna' },
+  { name:'Tanjung Layar', kec:'Bayah', cat:'Pantai', lat:-6.9926, lng:106.3113, desc:'Ikon Sawarna: dua karang raksasa menjulang seperti layar kapal — spot foto legendaris, indah saat matahari terbenam.', q:'Tanjung Layar Sawarna' },
+  { name:'Pantai Pulau Manuk', kec:'Bayah', cat:'Pantai', lat:-6.9772, lng:106.2827, desc:'Pantai dengan pulau karang kecil yang bisa didaki + gua peninggalan Jepang di sekitarnya. Masih sepi dan alami.', q:'Pulau Manuk Sawarna' },
+  { name:'Pantai Karang Taraje', kec:'Bayah', cat:'Pantai', lat:-6.9895, lng:106.3286, desc:'Karang bertingkat seperti tangga (taraje) — "air terjun laut" muncul tiap ombak besar pecah di karang.', q:'Karang Taraje Sawarna' },
+  { name:'Pantai Karang Bokor', kec:'Bayah', cat:'Pantai', lat:-6.9820, lng:106.2960, desc:'Tebing karang dramatis menghadap laut lepas dengan gardu pandang — dekat dari Sawarna.', q:'Karang Bokor Sawarna' },
+  { name:'Pantai Bagedur', kec:'Malingping', cat:'Pantai', lat:-6.8286, lng:105.9605, desc:'Garis pantai landai sepanjang ±10 km yang bisa dilintasi kendaraan — favorit warga saat libur lebaran.', q:'Pantai Bagedur Malingping' },
+  { name:'Pantai Binuangeun', kec:'Wanasalam', cat:'Pantai', lat:-6.8405, lng:105.8850, desc:'Kampung nelayan dengan TPI ramai — berburu sunrise lalu sarapan ikan bakar segar langsung dari pelelangan.', q:'Binuangeun Lebak' },
+  { name:'Pantai Karang Songsong (Cibobos)', kec:'Panggarangan', cat:'Pantai', lat:-6.9290, lng:106.1268, desc:'Pantai tersembunyi berkarang unik di jalur Malingping–Bayah — sangat alami, jarang wisatawan.', q:'Karang Songsong Panggarangan' },
+  { name:'Negeri di Atas Awan — Gunung Luhur', kec:'Cibeber (Citorek)', cat:'Pegunungan', lat:-6.7660, lng:106.3930, desc:'Lautan awan di ketinggian ±1.038 mdpl — datanglah sebelum subuh. Destinasi paling viral di Lebak, jalur Citorek–Warungbanten.', q:'Gunung Luhur Citorek' },
+  { name:'Kebun Teh Cikuya, Citorek', kec:'Cibeber', cat:'Pegunungan', lat:-6.7885, lng:106.3760, desc:'Hamparan kebun teh rakyat yang sejuk di kaki Halimun — searah perjalanan menuju Negeri di Atas Awan.', q:'Citorek Lebak' },
+  { name:'Situs Megalitik Lebak Sibedug', kec:'Cibeber', cat:'Sejarah', lat:-6.8105, lng:106.4030, desc:'Punden berundak batu purba tersembunyi di hutan Halimun — "Gunung Padang"-nya Banten, sangat terpencil, wajib pemandu lokal.', q:'Lebak Sibedug' },
+  { name:'Saba Budaya Baduy (Ciboleger)', kec:'Leuwidamar', cat:'Budaya', lat:-6.5760, lng:106.2905, desc:'Gerbang kampung adat Urang Kanekes. Trekking Baduy Luar–Dalam: tanpa listrik & sinyal — hormati pikukuh (aturan adat), dilarang memotret di Baduy Dalam.', q:'Suku Baduy' },
+  { name:'Museum Multatuli', kec:'Rangkasbitung', cat:'Sejarah', lat:-6.3592, lng:106.2470, desc:'Museum antikolonialisme pertama di Indonesia — kisah Max Havelaar, sejarah Lebak & kopi Banten. Buka Selasa–Minggu, tiket murah.', q:'Museum Multatuli' },
+  { name:'Arung Jeram Sungai Ciberang', kec:'Lebakgedong', cat:'Petualangan', lat:-6.5480, lng:106.4110, desc:'Rafting jeram kelas II–III sepanjang 9–12 km bersama operator lokal bersertifikat — seru untuk rombongan.', q:'Sungai Ciberang' },
+  { name:'Pemandian Air Panas Tirta Lebak Buana', kec:'Cipanas', cat:'Pemandian', lat:-6.5230, lng:106.3900, desc:'Kolam air panas belerang alami di kaki Halimun — pas melepas pegal setelah menjelajah Lebak timur.', q:'Cipanas Lebak Banten' },
+  { name:'Curug Munding', kec:'Gunungkencana', cat:'Curug', lat:-6.6820, lng:106.0950, desc:'Air terjun lebar bertingkat di aliran Cimadur — deras dan fotogenik terutama di musim hujan.', q:'Curug Munding Lebak' },
+  { name:'Curug Kanteh', kec:'Cilograng', cat:'Curug', lat:-6.9080, lng:106.4020, desc:'Salah satu curug tertinggi di Banten (±110 m) — trekking dari Desa Cikatomas; terpencil, megah, masih perawan.', q:'Curug Kanteh Cilograng' },
+  { name:'Curug Ciporolak', kec:'Cibeber', cat:'Curug', lat:-6.8320, lng:106.3350, desc:'Curug bertingkat berkolam jernih kebiruan di dalam hutan Halimun — jalur menantang, sebaiknya bersama pemandu lokal.', q:'Curug Ciporolak' },
+  { name:'Waduk Karian', kec:'Sajira', cat:'Danau', lat:-6.4420, lng:106.3560, desc:'Salah satu waduk terbesar di Indonesia — panorama perbukitan, spot memancing; kawasan wisatanya terus berkembang.', q:'Bendungan Karian' },
+  { name:'Goa Sangkir', kec:'Bojongmanik', cat:'Petualangan', lat:-6.5560, lng:106.1400, desc:'Gua karst berstalaktit-stalagmit alami — caving ringan ditemani warga lokal, jauh dari keramaian.', q:'Goa Sangkir Bojongmanik' },
+];
+let wisataCat = 'all';
+const wisataImgs = {}; // cache hasil pencarian foto Wikimedia per destinasi
+async function fetchWisataImg(q){
+  if (q in wisataImgs) return wisataImgs[q];
+  try {
+    const r = await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrnamespace=6&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`);
+    const pages = (await r.json())?.query?.pages || {};
+    const info = Object.values(pages)[0]?.imageinfo?.[0];
+    wisataImgs[q] = info?.thumburl || null;
+  } catch { wisataImgs[q] = null; }
+  return wisataImgs[q];
+}
+function renderWisata(){
+  const grid = document.getElementById('restoGrid');
+  const cats = ['all', ...new Set(WISATA.map(w => w.cat))];
+  document.getElementById('wisataChips').innerHTML = cats.map(c =>
+    `<button class="chip mini ${wisataCat===c?'active':''}" onclick="wisataCat='${c}';renderWisata()">${c==='all'?'Semua':c}</button>`).join('');
+  const from = myLoc || kecCoords.Rangkasbitung || { lat:-6.3592, lng:106.2494 };
+  const list = WISATA
+    .map((w, i) => ({ ...w, i, dist: havKm(from, w) }))
+    .filter(w => wisataCat === 'all' || w.cat === wisataCat)
+    .sort((a, b) => a.dist - b.dist);
+  grid.innerHTML = list.map(w => `
+    <div class="resto-card">
+      <div class="resto-media ${'g-' + (1 + w.i % 6)}" id="wmedia-${w.i}">
+        <span class="letter">${initOf(w.name)}</span>
+        <span class="type-tag">${w.cat}</span>
+        <span class="dist-tag">${km(w.dist)}</span>
+      </div>
+      <div class="resto-body">
+        <h4>${esc(w.name)}</h4>
+        <div class="resto-meta">Kec. ${esc(w.kec)}, Kab. Lebak${myLoc ? ' · ' + km(w.dist) + ' dari posisimu' : ''}</div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(w.desc)}</p>
+        <button class="btn btn-yellow btn-sm" onclick="openWisata(${w.i})">Detail &amp; Rute</button>
+      </div>
+    </div>`).join('')
+    + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Foto: Wikimedia Commons</p>`;
+  // muat foto asli secara asinkron (tanpa memblokir render)
+  list.forEach(w => fetchWisataImg(w.q).then(url => {
+    const el = document.getElementById('wmedia-' + w.i);
+    if (url && el && !el.querySelector('img')) el.insertAdjacentHTML('afterbegin', `<img src="${esc(url)}" alt="${esc(w.name)}" loading="lazy">`);
+  }));
+}
+function openWisata(i){
+  const w = WISATA[i];
+  if (!w) return;
+  const from = myLoc || kecCoords.Rangkasbitung || { lat:-6.3592, lng:106.2494 };
+  const dist = havKm(from, w);
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${w.lat},${w.lng}`;
+  const img = wisataImgs[w.q];
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${esc(w.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="pd-media ${'g-' + (1 + i % 6)}">
+        ${img ? `<img src="${esc(img)}" alt="${esc(w.name)}">` : `<span class="letter">${initOf(w.name)}</span>`}
+        <span class="dist-tag">${km(dist)} dari posisimu</span>
+      </div>
+      <div class="modal-body">
+        <div class="resto-info-row"><span><b>${w.cat}</b> · Kec. ${esc(w.kec)}, Kabupaten Lebak, Banten</span></div>
+        <p style="font-size:13.5px;margin:10px 0">${esc(w.desc)}</p>
+        <div class="safe-note">Bawa uang tunai dan cek cuaca — beberapa lokasi minim sinyal & ATM.</div>
+        <a class="btn btn-coral" style="width:100%;margin-top:14px" href="${gmaps}" target="_blank" rel="noopener">Rute ke Sana (Google Maps)</a>
+        <a class="btn" style="width:100%;margin-top:8px" href="https://www.google.com/search?q=${encodeURIComponent(w.name + ' ' + w.kec + ' Lebak')}" target="_blank" rel="noopener">Info &amp; Ulasan Terbaru (Google)</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- SELL (dengan foto asli) ---------- */
+function openSell(){
+  if (needLogin('posting jualan')) return;
+  sellImgs = [];
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 14px">Posting sebagai <b>${esc(user.name)}</b> · Kec. ${esc(user.kec)}</div>
+        <label class="f">Foto barang (maks 5 foto)</label>
+        <input type="file" id="sFile" accept="image/*" multiple style="display:none" onchange="onPhoto(event)">
+        <div id="photoBox"></div>
+        <label class="f">Nama produk / jasa</label>
+        <input class="f" id="sName" placeholder="cth: Gula Aren Cetak 1kg">
+        <label class="f">Kategori</label>
+        <select class="f" id="sCat" onchange="onSellCat()">
+          ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
+        </select>
+        <div id="jasaNote" class="safe-note hidden" style="margin-top:10px">Jasa online: tanpa ongkir, hasil dikirim via email/WA/chat.</div>
+        <div id="rowShipCost" class="hidden">
+          <label class="f">Ongkir dari penjual (Rp) — wajib untuk Peternakan</label>
+          <input class="f" id="sShipCost" type="number" min="0" placeholder="cth: 25000">
+          <p style="font-size:11.5px;color:var(--muted);margin-top:4px">Ongkir ditentukan penjual dan dibayar pembeli saat checkout.</p>
+        </div>
+        <label class="f">Kondisi</label>
+        <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
+        <label class="f">Harga (Rp)</label>
+        <input class="f" id="sPrice" type="number" min="1000" placeholder="cth: 50000">
+        <label class="f">Stok</label>
+        <input class="f" id="sStock" type="number" min="1" value="1">
+        <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
+        <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
+        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan — komisi ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) per transaksi COD</label></div>
+        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Gratis ongkir ditanggung penjual (komisi +4%, prioritas feed)</label></div>
+        <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Posting gratis · komisi ${SELLER_COMM*100}% per transaksi sukses</p>
+      </div>
+    </div>
+  </div>`;
+  renderPhotoBox();
+}
+function onSellCat(){
+  const cat = document.getElementById('sCat').value;
+  const jasa = cat === 'jasa';
+  document.getElementById('jasaNote').classList.toggle('hidden', !jasa);
+  document.getElementById('rowCod').classList.toggle('hidden', jasa);
+  document.getElementById('rowFreeship').classList.toggle('hidden', jasa);
+  document.getElementById('rowShipCost').classList.toggle('hidden', cat !== 'ternak');
+}
+async function compressImage(file){
+  const img = await decodeImageFile(file);
+  const MAX = 900;
+  const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale);
+  c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff'; // PNG transparan (screenshot) → tanpa ini jadi hitam saat ke JPEG
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  releaseImg(img);
+  const out = c.toDataURL('image/jpeg', 0.72);
+  if (out.length < 200) throw new Error('Gagal memproses gambar — coba pilih ulang fotonya');
+  return out;
+}
+function renderPhotoBox(){
+  const box = document.getElementById('photoBox');
+  if (!box) return;
+  if (!sellImgs.length){
+    box.innerHTML = `
+      <div class="photo-drop" onclick="document.getElementById('sFile').click()">
+        ${IC.camera}
+        <span>Ambil foto / pilih dari galeri (bisa banyak)</span>
+        <span style="font-size:11.5px;font-weight:600">Maks 5 foto — dikompresi otomatis</span>
+      </div>`;
+    return;
+  }
+  box.innerHTML = `<div class="photo-grid">
+    ${sellImgs.map((u, i) => `<div class="ph"><img src="${u}" alt="">${i===0?'<span class="imgs-count" style="left:6px;bottom:6px">Utama</span>':''}<button class="x-btn" onclick="removePhoto(${i})" title="Hapus">✕</button></div>`).join('')}
+    ${sellImgs.length < 5 ? `<div class="add" onclick="document.getElementById('sFile').click()">+</div>` : ''}
+  </div>`;
+}
+async function onPhoto(e){
+  const files = [...e.target.files].slice(0, 5 - sellImgs.length);
+  for (const f of files){
+    try { sellImgs.push(await compressImage(f)); }
+    catch (err) { toast(err.message); }
+  }
+  e.target.value = '';
+  renderPhotoBox();
+}
+function removePhoto(i){
+  sellImgs.splice(i, 1);
+  renderPhotoBox();
+}
+async function submitSell(){
+  try {
+    await api('/products', { method:'POST', body:{
+      name: document.getElementById('sName').value,
+      cat: document.getElementById('sCat').value,
+      cond: document.getElementById('sCond').value,
+      price: document.getElementById('sPrice').value,
+      stock: document.getElementById('sStock').value,
+      descr: document.getElementById('sDesc').value,
+      cod: document.getElementById('sCod').checked,
+      freeship: document.getElementById('sFreeship').checked,
+      imgs: sellImgs,
+      shipCost: document.getElementById('sCat').value === 'ternak' ? document.getElementById('sShipCost').value : undefined,
+      lat: myLoc?.lat, lng: myLoc?.lng, // posisi live penjual saat posting
+    }});
+    closeModal(); sellImgs = [];
+    activeCat = 'all'; renderCats(); await loadFeed();
+    toast('Produk berhasil diposting');
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- INIT ---------- */
+async function init(){
+  renderAuthSlot(); renderCats();
+  document.getElementById('searchInput').addEventListener('input', searchInput);
+  try {
+    const cfg = await api('/config');
+    KECAMATAN = cfg.kecamatan;
+    kecCoords = cfg.kecCoords || {};
+    APP_FEE = cfg.fees.appFee;
+    SELLER_COMM = cfg.fees.sellerCommission ?? SELLER_COMM;
+    COD_FEE_RATE = cfg.fees.codFeeRate ?? COD_FEE_RATE;
+    COD_FEE_MIN = cfg.fees.codFeeMin ?? COD_FEE_MIN;
+    COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;
+    FREESHIP_CAP = cfg.limits.freeshipCap; FREESHIP_MIN = cfg.limits.freeshipMin;
+  } catch (e) { toast(e.message); }
+  if (locManual && kecCoords[locManual]){
+    myLoc = { ...kecCoords[locManual] };
+    setLocLabel(esc(locManual) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
+  } else {
+    if (myLoc) reverseLabel(); // posisi terakhir langsung tampil, lalu GPS memperbarui
+    startGeo(); // lokasi LIVE: watchPosition terus mengikuti pergerakanmu
+  }
+  if (token){
+    try { user = (await api('/me')).user; store.set('user', user); afterLogin(); renderAuthSlot(); }
+    catch { await loadFeed(); }
+  } else {
+    await loadFeed();
+  }
+  if (!token && !store.get('welcomed', false)){
+    store.set('welcomed', true);
+    setTimeout(() => openAuth('login', true), 600);
+  }
+}
+init();
+</script>
+</body>
+</html>
