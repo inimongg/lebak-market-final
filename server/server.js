@@ -513,7 +513,7 @@ app.post('/api/products', auth, (req, res) => {
   if (!name.trim()) return bad(res, 400, 'Nama produk wajib diisi');
   if (!CATS.includes(cat)) return bad(res, 400, 'Kategori tidak dikenal');
   const pr = parseInt(price, 10), st = parseInt(stock, 10);
-  if (!pr || pr < 1000) return bad(res, 400, 'Harga minimal Rp1.000');
+  if (!pr || pr < 1) return bad(res, 400, 'Harga wajib diisi');
   if (!st || st < 1) return bad(res, 400, 'Stok minimal 1');
   // ongkir tetap dari penjual — wajib untuk kategori peternakan
   let shipCostVal = null;
