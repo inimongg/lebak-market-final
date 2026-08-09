@@ -33,8 +33,8 @@
   --green-2:#000000;
   --tint:#f4f4f5;
   --tint-line:#e4e5e7;
-  --amber:#ff8a00;          /* aksen oranye: badge, rating, notifikasi */
-  --amber-tint:#fff4e6;
+  --amber:#c9a227;          /* aksen gold: badge, rating, notifikasi */
+  --amber-tint:#faf3df;
   --price:#121316;
   --radius:16px;
   --shadow:0 1px 2px rgba(0,0,0,.05);
@@ -552,12 +552,11 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .resto-body h4{font-size:15.5px;margin-bottom:2px}
 .resto-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
 /* --- SIDE QUEST (misi berhadiah saldo) --- */
-.quest-banner{display:flex;align-items:center;gap:12px;background:var(--green);color:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:transform .15s}
-.quest-banner:hover{transform:translateY(-1px)}
+.quest-banner{display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:0;border-top:1px solid var(--amber);border-bottom:1px solid var(--amber);padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:transform .15s}
 .quest-banner:active{transform:scale(.98)}
 .quest-banner b{font-size:14.5px}
 .quest-banner p{font-size:12px;opacity:.75;margin-top:2px}
-.quest-banner .q-go{margin-left:auto;background:var(--amber);color:#fff;border:none;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.quest-banner .q-go{margin-left:auto;background:var(--amber);color:#121316;border:none;border-radius:0;padding:8px 16px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
 .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
 .q-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .q-top b{font-size:15px}
@@ -711,12 +710,13 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 
 /* banner CTA gelap */
 .cta-banner{
-  margin-top:26px;background:var(--ink);color:#fff;border-radius:16px;padding:20px 24px;
+  margin-top:26px;background:var(--ink);color:#fff;border-radius:0;padding:20px 24px;
   display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  border-top:1px solid var(--amber);border-bottom:1px solid var(--amber);
 }
 .cta-banner h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:#fff}
 .cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
-.cta-btn{border:none;background:#fff;color:var(--ink);border-radius:999px;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s}
+.cta-btn{border:1px solid var(--amber);background:var(--amber);color:#121316;border-radius:0;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s}
 .cta-btn:active{transform:scale(.96)}
 
 /* footer */
@@ -870,7 +870,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
         </div>
       </div>
       <div class="quest-banner" onclick="showView('misi')">
-        <div><b>Side Quest 💼</b><p>Kerjakan misi ringan dari Lebak.market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
+        <div><b>Side Quest</b><p>Kerjakan misi ringan dari Lebak.market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
         <button class="q-go">Lihat Misi →</button>
       </div>
       <div class="shop-grid">
