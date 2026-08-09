@@ -107,7 +107,7 @@ app.use(express.static(path.join(__dirname, '..'), {
 }));
 
 /* ================= KONSTANTA BISNIS ================= */
-const APP_FEE = 1000;
+const APP_FEE = 0; // TESTING: fee customer di-nolkan sementara untuk uji coba. Kembalikan ke 1000 sebelum go-live.
 const SELLER_COMMISSION = 0.015; // 1,5% per transaksi sukses
 const DRIVER_COMMISSION = 0.10;
 const FREESHIP_EXTRA = 0.04;
@@ -295,8 +295,9 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance, avatar FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance, avatar, banned FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
+    if (req.user.banned) return bad(res, 403, 'Akun ini telah diblokir admin karena pelanggaran. Hubungi admin bila ini keliru.');
     next();
   } catch { return bad(res, 401, 'Sesi berakhir — silakan login kembali'); }
 }
@@ -447,6 +448,7 @@ app.post('/api/auth/login', async (req, res) => {
   } else if (!await bcrypt.compare(pw, u.pass_hash)) {
     return bad(res, 401, 'Password salah');
   }
+  if (u.banned) return bad(res, 403, 'Akun ini telah diblokir admin karena pelanggaran. Hubungi admin bila ini keliru.');
   res.json({ ok: true, token: signToken(u.id), user: userPayload(u) });
 });
 
@@ -497,6 +499,9 @@ app.get('/api/products', optionalAuth, (req, res) => {
     rows = rows.filter(p => p.name.toLowerCase().includes(s) || p.seller_name.toLowerCase().includes(s) || p.cat.includes(s));
   }
   if (req.userId) {
+    // sembunyikan jualan dari penjual yang aku blokir sendiri
+    const blocked = new Set(db.prepare('SELECT blocked_id FROM blocks WHERE blocker_id = ?').all(req.userId).map(x => x.blocked_id));
+    if (blocked.size) rows = rows.filter(p => !blocked.has(p.seller_id));
     const mine = new Set(db.prepare('SELECT product_id FROM likes WHERE user_id = ?').all(req.userId).map(x => x.product_id));
     rows.forEach(p => { p.liked = mine.has(p.id) ? 1 : 0; });
   }
@@ -1017,11 +1022,120 @@ app.post('/api/chats/:peerId', auth, (req, res) => {
   const pid = parseInt(req.params.peerId, 10);
   if (pid === req.user.id) return bad(res, 400, 'Tidak bisa chat dengan diri sendiri');
   if (!db.prepare('SELECT id FROM users WHERE id = ?').get(pid)) return bad(res, 404, 'Pengguna tidak ditemukan');
+  if (db.prepare('SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?').get(req.user.id, pid))
+    return bad(res, 403, 'Kamu telah memblokir pengguna ini — buka menu profilnya untuk membuka blokir');
+  if (db.prepare('SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?').get(pid, req.user.id))
+    return bad(res, 403, 'Pesan tidak terkirim — pengguna ini tidak menerima pesan darimu');
   const text = String(req.body.text || '').trim().slice(0, 1000);
   if (!text) return bad(res, 400, 'Pesan kosong');
   db.prepare('INSERT INTO messages (sender_id, recipient_id, text, read, at) VALUES (?,?,?,0,?)').run(req.user.id, pid, text, now());
   ssePush(pid, 'chat', { from: { id: req.user.id, name: req.user.name }, text, at: now() });
   res.json({ ok: true });
+});
+
+/* ================= REPORT & BLOCK — moderasi antar pengguna ================= */
+const REPORT_REASONS = ['penipuan', 'barang_ilegal', 'spam', 'pelecehan', 'lainnya'];
+
+/* Pembeli/penjual melaporkan akun atau produk ke admin */
+app.post('/api/reports', auth, (req, res) => {
+  const targetType = req.body.target_type === 'product' ? 'product' : 'user';
+  const targetId = parseInt(req.body.target_id, 10);
+  const reason = REPORT_REASONS.includes(req.body.reason) ? req.body.reason : 'lainnya';
+  const note = String(req.body.note || '').trim().slice(0, 800);
+  if (!targetId) return bad(res, 400, 'Target laporan tidak valid');
+  if (targetType === 'user') {
+    if (targetId === req.user.id) return bad(res, 400, 'Tidak bisa melaporkan akun sendiri');
+    if (!db.prepare('SELECT id FROM users WHERE id = ?').get(targetId)) return bad(res, 404, 'Pengguna tidak ditemukan');
+  } else {
+    if (!db.prepare('SELECT id FROM products WHERE id = ?').get(targetId)) return bad(res, 404, 'Produk tidak ditemukan');
+  }
+  db.prepare('INSERT INTO reports (reporter_id, target_type, target_id, reason, note, created_at) VALUES (?,?,?,?,?,?)')
+    .run(req.user.id, targetType, targetId, reason, note, now());
+  res.json({ ok: true, message: 'Laporan terkirim — tim admin akan meninjau secepatnya.' });
+});
+
+/* Blokir akun lain: hilang dari feed jualanmu & tidak bisa chat kamu lagi */
+app.post('/api/users/:id/block', auth, (req, res) => {
+  const pid = parseInt(req.params.id, 10);
+  if (pid === req.user.id) return bad(res, 400, 'Tidak bisa memblokir diri sendiri');
+  if (!db.prepare('SELECT id FROM users WHERE id = ?').get(pid)) return bad(res, 404, 'Pengguna tidak ditemukan');
+  db.prepare('INSERT OR IGNORE INTO blocks (blocker_id, blocked_id, at) VALUES (?,?,?)').run(req.user.id, pid, now());
+  res.json({ ok: true });
+});
+app.post('/api/users/:id/unblock', auth, (req, res) => {
+  const pid = parseInt(req.params.id, 10);
+  db.prepare('DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?').run(req.user.id, pid);
+  res.json({ ok: true });
+});
+app.get('/api/blocks', auth, (req, res) => {
+  const rows = db.prepare(`SELECT u.id, u.name, u.kec, u.avatar FROM blocks b
+    JOIN users u ON u.id = b.blocked_id WHERE b.blocker_id = ? ORDER BY b.at DESC`).all(req.user.id);
+  res.json({ blocked: rows });
+});
+
+/* --- ADMIN: tinjau laporan & moderasi akun --- */
+app.get('/api/admin/reports', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare(`
+    SELECT r.*, u.name reporter_name, u.email reporter_email, u.phone reporter_phone
+    FROM reports r JOIN users u ON u.id = r.reporter_id
+    WHERE r.status = 'Menunggu' ORDER BY r.created_at ASC LIMIT 200`).all();
+  const withTarget = rows.map(r => {
+    if (r.target_type === 'user') {
+      const t = db.prepare('SELECT id, name, email, phone, banned FROM users WHERE id = ?').get(r.target_id);
+      return { ...r, target: t };
+    } else {
+      const t = db.prepare('SELECT id, name, seller_id FROM products WHERE id = ?').get(r.target_id);
+      return { ...r, target: t };
+    }
+  });
+  res.json({ reports: withTarget });
+});
+/* Tandai laporan sudah ditangani (tanpa aksi lanjutan) */
+app.post('/api/admin/reports/:id/dismiss', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  db.prepare("UPDATE reports SET status = 'Selesai' WHERE id = ?").run(req.params.id);
+  res.json({ ok: true });
+});
+/* Blokir akun pelapor target (banned=1) langsung dari laporan */
+app.post('/api/admin/reports/:id/ban-user', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const r = db.prepare('SELECT * FROM reports WHERE id = ?').get(req.params.id);
+  if (!r) return bad(res, 404, 'Laporan tidak ditemukan');
+  const userId = r.target_type === 'user' ? r.target_id : db.prepare('SELECT seller_id FROM products WHERE id = ?').get(r.target_id)?.seller_id;
+  if (!userId) return bad(res, 404, 'Akun target tidak ditemukan');
+  db.prepare('UPDATE users SET banned = 1 WHERE id = ?').run(userId);
+  db.prepare("UPDATE reports SET status = 'Selesai' WHERE id = ?").run(r.id);
+  res.json({ ok: true, banned_user_id: userId });
+});
+app.post('/api/admin/users/:id/unban', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  db.prepare('UPDATE users SET banned = 0 WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+/* --- ADMIN: putuskan sengketa komplain — cairkan ke penjual ATAU batalkan & catat refund --- */
+app.post('/api/admin/orders/:id/resolve', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const o = getOrder(req.params.id);
+  if (!o) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (o.status !== 'Komplain — Ditinjau') return bad(res, 409, 'Pesanan ini tidak sedang dalam status sengketa');
+  const action = req.body.action; // 'release' (menangkan penjual) | 'refund' (menangkan pembeli)
+  if (action === 'release') {
+    const commission = Math.round(o.price * SELLER_COMMISSION);
+    const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship
+      ? Math.round(o.price * FREESHIP_EXTRA) : 0;
+    const net = o.price - commission - extra;
+    addRevenue(o.id, 'commission', commission);
+    addRevenue(o.id, 'freeship_extra', extra);
+    walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair (sengketa dimenangkan penjual): ' + o.pname.slice(0, 40), o.id);
+    addEvent(o.id, 'Selesai — Dana Cair', `Sengketa diputuskan admin: dana Rp${net.toLocaleString('id-ID')} cair ke penjual.`);
+  } else if (action === 'refund') {
+    addEvent(o.id, 'Dibatalkan', 'Sengketa diputuskan admin: dana dikembalikan ke pembeli (refund manual oleh admin ke rekening/QRIS pembeli).');
+  } else {
+    return bad(res, 400, "action harus 'release' atau 'refund'");
+  }
+  res.json({ ok: true, order: getOrder(o.id) });
 });
 
 /* Daftar permintaan penarikan utk ADMIN (kamu): set env ADMIN_KEY lalu buka
