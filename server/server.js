@@ -467,7 +467,9 @@ app.post('/api/me/avatar', auth, (req, res) => {
 /* ================= PRODUK (100% postingan pengguna asli) ================= */
 const PRODUCT_SELECT = `
   SELECT p.*, u.name seller_name, u.kec seller_kec, u.avatar seller_avatar,
-    (SELECT COUNT(*) FROM likes l WHERE l.product_id = p.id) likes
+    (SELECT COUNT(*) FROM likes l WHERE l.product_id = p.id) likes,
+    (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) review_count,
+    (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id) avg_rating
   FROM products p JOIN users u ON u.id = p.seller_id`;
 
 app.get('/api/products', optionalAuth, (req, res) => {
@@ -657,6 +659,40 @@ app.get('/api/orders/:id/vpay-status', auth, async (req, res) => {
   }
 });
 
+/* ==================================================================
+ * RATING & ULASAN
+ * Cuma bisa direview kalau: (1) pembeli adalah pemilik order, dan
+ * (2) status order sudah final "Selesai" / "Selesai — Dana Cair".
+ * Satu order = maksimal satu ulasan (dijaga UNIQUE di kolom order_id).
+ * ================================================================== */
+app.post('/api/orders/:id/review', auth, (req, res) => {
+  const o = getOrder(req.params.id);
+  if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (!o.status.startsWith('Selesai')) return bad(res, 400, 'Pesanan belum selesai, belum bisa direview');
+  const already = db.prepare('SELECT id FROM reviews WHERE order_id = ?').get(o.id);
+  if (already) return bad(res, 409, 'Pesanan ini sudah pernah kamu review');
+  const rating = parseInt(req.body.rating, 10);
+  if (!rating || rating < 1 || rating > 5) return bad(res, 400, 'Rating wajib 1-5 bintang');
+  const comment = String(req.body.comment || '').slice(0, 500).trim();
+  const id = uid();
+  db.prepare(`INSERT INTO reviews (id, order_id, product_id, seller_id, buyer_id, rating, comment, created_at)
+    VALUES (?,?,?,?,?,?,?,?)`)
+    .run(id, o.id, o.product_id, o.seller_id, o.buyer_id, rating, comment || null, now());
+  // notifikasi ke penjual biar dia tau ada ulasan baru masuk
+  ssePush(o.seller_id, 'notif', { title: 'Ulasan baru', body: `${rating}★ untuk pesanan ${o.id}` });
+  res.json({ ok: true, review: { id, rating, comment } });
+});
+
+/* Daftar ulasan utk 1 produk — dipakai di halaman detail produk */
+app.get('/api/products/:id/reviews', (req, res) => {
+  const rows = db.prepare(`
+    SELECT rv.id, rv.rating, rv.comment, rv.created_at, u.name buyer_name, u.avatar buyer_avatar
+    FROM reviews rv JOIN users u ON u.id = rv.buyer_id
+    WHERE rv.product_id = ? ORDER BY rv.created_at DESC LIMIT 100
+  `).all(req.params.id);
+  res.json({ reviews: rows });
+});
+
 function getOrder(id){
   const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.img, p.cond, p.dist, p.cat,
       su.name seller_name, bu.name buyer_name
@@ -667,6 +703,7 @@ function getOrder(id){
     WHERE o.id = ?`).get(id);
   if (!o) return null;
   o.events = db.prepare('SELECT status, note, at FROM order_events WHERE order_id = ? ORDER BY at').all(id);
+  o.has_review = !!db.prepare('SELECT id FROM reviews WHERE order_id = ?').get(id);
   return o;
 }
 

@@ -162,6 +162,26 @@ try { db.exec('ALTER TABLE products ADD COLUMN ship_cost INTEGER'); } catch {} /
 try { db.exec("UPDATE products SET cat = 'ternak' WHERE cat = 'ikan'"); } catch {} // Ikan Hias → Peternakan
 try { db.exec('ALTER TABLE orders ADD COLUMN pay_proof TEXT'); } catch {} // bukti transfer (pembayaran manual)
 try { db.exec('ALTER TABLE orders ADD COLUMN vpay_id TEXT'); } catch {} // ID transaksi QRIS dinamis VPay
+
+/* ==================================================================
+ * TABEL REVIEWS — sistem rating & ulasan setelah pesanan selesai
+ * Satu order cuma boleh direview 1x oleh pembeli (dicek via UNIQUE).
+ * rating: 1-5 bintang. comment: opsional, boleh kosong.
+ * ================================================================== */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS reviews (
+    id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL UNIQUE,
+    product_id TEXT NOT NULL,
+    seller_id TEXT NOT NULL,
+    buyer_id TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TEXT NOT NULL
+  )
+`);
+db.exec('CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id)');
+db.exec('CREATE INDEX IF NOT EXISTS idx_reviews_seller ON reviews(seller_id)');
 try { db.exec('ALTER TABLE users ADD COLUMN avatar TEXT'); } catch {} // foto profil
 try { db.exec('ALTER TABLE products ADD COLUMN imgs TEXT'); } catch {} // galeri foto produk (JSON array path)
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat pembeli
@@ -170,5 +190,49 @@ try { db.exec('ALTER TABLE products ADD COLUMN deleted INTEGER NOT NULL DEFAULT 
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lat REAL'); } catch {} // titik GPS pembeli saat checkout (utk share-loc ke driver)
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lng REAL'); } catch {}
 try { db.exec('ALTER TABLE wallet_txns ADD COLUMN status TEXT'); } catch {} // status penarikan: Diproses | Sukses
+
+/* ==================================================================
+ * BACKUP OTOMATIS DATABASE
+ * ---------------------------------------------------------------
+ * Kenapa perlu ini WALAUPUN sudah pasang Volume di Railway:
+ * Volume cuma melindungi dari "data hilang pas redeploy". Volume
+ * TIDAK melindungi dari: file database korup akibat bug, salah hapus
+ * data secara tidak sengaja, atau volume itu sendiri kena masalah.
+ * Backup ini bikin salinan snapshot .db terpisah tiap 24 jam,
+ * disimpan di folder backups/ sebelah data.db, dan otomatis buang
+ * yang lebih lama dari 7 hari (biar disk tidak penuh).
+ *
+ * Cara restore manual kalau suatu saat butuh:
+ *   1. Matikan server
+ *   2. Cari file terbaru di folder backups/ (nama ada tanggalnya)
+ *   3. Copy & timpa file itu ke lokasi data.db yang asli
+ *   4. Nyalakan lagi server
+ * ================================================================== */
+const BACKUP_DIR = path.join(path.dirname(DB_PATH), 'backups');
+const BACKUP_KEEP_DAYS = 7;
+
+function backupNow(){
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-'); // aman utk nama file
+    const dest = path.join(BACKUP_DIR, `data-${stamp}.db`);
+    // VACUUM INTO = snapshot konsisten dari SQLite (termasuk data yg masih
+    // di WAL, belum ke-flush ke file utama) — lebih aman drpd fs.copyFile biasa.
+    db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`);
+    // beresin backup lama biar disk gak penuh
+    const cutoff = Date.now() - BACKUP_KEEP_DAYS * 24 * 60 * 60 * 1000;
+    for (const f of fs.readdirSync(BACKUP_DIR)){
+      const full = path.join(BACKUP_DIR, f);
+      if (fs.statSync(full).mtimeMs < cutoff) fs.unlinkSync(full);
+    }
+    console.log('🗄️  Backup database tersimpan:', dest);
+  } catch (err) {
+    console.error('⚠️  Backup database gagal:', err.message);
+  }
+}
+// backup pertama 2 menit setelah server nyala (biar gak ganggu startup),
+// lalu berulang tiap 24 jam selama server hidup
+setTimeout(backupNow, 2 * 60 * 1000);
+setInterval(backupNow, 24 * 60 * 60 * 1000);
 
 module.exports = db;
