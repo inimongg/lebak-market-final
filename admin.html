@@ -37,6 +37,12 @@ img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;d
   </div>
 
   <div id="panel" style="display:none">
+    <h2>🚩 Laporan Pengguna & Produk</h2>
+    <div id="reports"></div>
+
+    <h2>⚖️ Sengketa Komplain — Perlu Keputusan</h2>
+    <div id="disputes"></div>
+
     <h2>Pembayaran Manual — Menunggu Verifikasi</h2>
     <div id="payments"></div>
 
@@ -89,10 +95,42 @@ async function api(path, opt = {}){
   return d;
 }
 
+const REASON_LABEL = { penipuan:'Penipuan', barang_ilegal:'Barang Ilegal', spam:'Spam', pelecehan:'Pelecehan', lainnya:'Lainnya' };
+
 async function load(){
   try {
-    const [pay, wd, ords, qs, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), api('/admin/quests'), fetch('/api/paycfg').then(r => r.json())]);
+    const [pay, wd, ords, qs, cfg, rpt] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), api('/admin/quests'), fetch('/api/paycfg').then(r => r.json()), api('/admin/reports')]);
     $('panel').style.display = '';
+    $('reports').innerHTML = rpt.reports.length ? rpt.reports.map(r => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="tag" style="background:#fdecec;color:#c0392b">${esc(REASON_LABEL[r.reason] || r.reason)}</span>
+          <span class="tag">${r.target_type === 'user' ? 'AKUN' : 'PRODUK'}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">
+          Dilaporkan oleh: ${esc(r.reporter_name)} · ${esc(r.reporter_email)} · ${esc(r.reporter_phone)} · ${new Date(r.created_at).toLocaleString('id-ID')}<br>
+          Target: ${r.target ? esc(r.target.name) + (r.target.email ? ' · ' + esc(r.target.email) : '') + (r.target.banned ? ' · <b style="color:#c0392b">SUDAH DIBLOKIR</b>' : '') : '(sudah dihapus)'}
+        </div>
+        ${r.note ? `<p style="margin-top:8px;white-space:pre-wrap">${esc(r.note)}</p>` : ''}
+        <div class="row">
+          <button class="btn-r" onclick="if(confirm('Blokir akun ini permanen?'))reportAct(${r.id},'ban-user')">🚫 Blokir Akun</button>
+          <button class="btn-o" onclick="reportAct(${r.id},'dismiss')">Abaikan / Selesai</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada laporan menunggu.</div>';
+    const disputeOrders = ords.orders.filter(o => o.status === 'Komplain — Ditinjau');
+    $('disputes').innerHTML = disputeOrders.length ? disputeOrders.map(o => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(o.total)}</span>
+          <span class="tag" style="background:#fdecec;color:#c0392b">SENGKETA</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(o.id)} · ${esc(o.pname)}<br>
+        Pembeli: ${esc(o.buyer)} (${esc(o.buyer_phone)}) ↔ Penjual: ${esc(o.seller)} (${esc(o.seller_phone)})</div>
+        <div class="row">
+          <button class="btn-g" onclick="if(confirm('Menangkan PENJUAL — cairkan dana?'))resolveDispute('${o.id}','release')">✓ Menangkan Penjual (Cairkan)</button>
+          <button class="btn-r" onclick="if(confirm('Menangkan PEMBELI — batalkan & refund manual?'))resolveDispute('${o.id}','refund')">↩ Menangkan Pembeli (Refund)</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada sengketa aktif.</div>';
     $('payments').innerHTML = pay.payments.length ? pay.payments.map(p => `
       <div class="card">
         <div class="row" style="margin:0;justify-content:space-between">
@@ -173,6 +211,14 @@ async function act(id, what){
 }
 async function wdSuccess(id){
   try { await api('/admin/withdrawals/' + id + '/success', { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function reportAct(id, what){
+  try { await api('/admin/reports/' + id + '/' + what, { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function resolveDispute(id, action){
+  try { await api('/admin/orders/' + id + '/resolve', { method:'POST', body:{ action } }); load(); }
   catch (e) { alert(e.message); }
 }
 async function questAct(pathTail){
