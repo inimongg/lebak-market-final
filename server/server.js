@@ -40,11 +40,6 @@ const IS_DEV = process.env.NODE_ENV !== 'production';
  * Set VPAY_API_KEY di server/.env (jangan commit ke git). */
 const VPAY_API_KEY = process.env.VPAY_API_KEY || '';
 const VPAY_BASE_URL = process.env.VPAY_BASE_URL || 'https://vitopediapay.com/api';
-/* Kebanyakan penyedia QRIS di Indonesia menolak transaksi di bawah nominal
- * tertentu (umumnya Rp1.500–Rp10.000). Belum ada dokumentasi resmi VPay yang
- * menyebutkan angka pastinya, jadi nilai ini KONSERVATIF & BISA DIUBAH lewat
- * env VPAY_MIN_AMOUNT begitu kamu tahu angka pastinya dari support VPay. */
-const VPAY_MIN_AMOUNT = parseInt(process.env.VPAY_MIN_AMOUNT, 10) || 1500;
 
 async function vpayCreate(amount, refId){
   const r = await fetch(`${VPAY_BASE_URL}/pg/create`, {
@@ -56,10 +51,7 @@ async function vpayCreate(amount, refId){
   let j;
   try { j = JSON.parse(raw); }
   catch { throw new Error(`VPay balas non-JSON (HTTP ${r.status}): ${raw.slice(0, 150)}`); }
-  // Tampilkan alasan penolakan VPay apa adanya (mis. "jumlah di bawah minimum",
-  // "saldo merchant habis", dll.) — jangan ditelan jadi pesan generik supaya
-  // gampang didiagnosis dari riwayat status order tanpa perlu cek log server.
-  if (!r.ok || !j.success) throw new Error(j.message || j.error || `VPay menolak transaksi (HTTP ${r.status}): ${raw.slice(0, 200)}`);
+  if (!r.ok || !j.success) throw new Error(j.message || `VPay error HTTP ${r.status}`);
   return j.data; // { id, amount, unique_code, total, qr_image, status, created_at }
 }
 
@@ -643,14 +635,6 @@ app.post('/api/orders', auth, async (req, res) => {
   if (!VPAY_API_KEY){
     addEvent(id, 'Menunggu Pembayaran', 'VPAY_API_KEY belum diatur di server — QRIS otomatis tidak tersedia.');
     return res.json({ ok: true, order: getOrder(id), payment: { gateway: true, error: 'VPay belum dikonfigurasi di server' } });
-  }
-  if (total < VPAY_MIN_AMOUNT){
-    // Nominal terlalu kecil utk QRIS otomatis. Saldo pembeli baru bisa
-    // dipakai kalau sudah terisi (dari hasil jualan/misi) — kalau belum ada
-    // saldo, satu-satunya opsi saat ini adalah menaikkan total transaksi.
-    const msg = `Total Rp${total.toLocaleString('id-ID')} di bawah minimum QRIS otomatis (Rp${VPAY_MIN_AMOUNT.toLocaleString('id-ID')}). Gabungkan beberapa barang jadi satu transaksi, atau bayar pakai Saldo kalau kamu sudah punya saldo dari hasil jualan/misi.`;
-    addEvent(id, 'Menunggu Pembayaran', msg);
-    return res.json({ ok: true, order: getOrder(id), payment: { gateway: true, error: msg } });
   }
   try {
     const vp = await vpayCreate(total, id);
