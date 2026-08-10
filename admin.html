@@ -15,7 +15,7 @@ h2{font-size:15px;margin:22px 0 10px}
 .card{background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.1);padding:14px 16px;margin-bottom:10px}
 input,textarea{width:100%;border:1px solid #e4e6eb;border-radius:8px;padding:9px 12px;font:inherit;margin-top:6px}
 button{border:none;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
-.btn-g{background:#0b8f4d;color:#fff}
+.btn-g{background:#121316;color:#fff}
 .btn-r{background:#fdecec;color:#c0392b}
 .btn-o{background:#e4e6eb;color:#1c1e21}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
@@ -148,7 +148,7 @@ async function load(){
       <div class="card">
         <div class="row" style="margin:0;justify-content:space-between">
           <span class="amount">${rupiah(w.amount)}</span>
-          <span class="tag" style="${w.status === 'Sukses' ? 'background:#e6f6ec;color:#0b8f4d' : ''}">${esc(w.status || 'Diproses')}</span>
+          <span class="tag" style="${w.status === 'Sukses' ? 'background:#f1f1f2;color:#121316' : ''}">${esc(w.status || 'Diproses')}</span>
         </div>
         <div class="muted" style="margin-top:4px">${esc(w.name)} · ${esc(w.email)} · ${esc(w.phone)} · ${esc(w.tanggal)}<br>${esc(w.note)}</div>
         ${w.status !== 'Sukses' ? `<div class="row"><button class="btn-g" onclick="wdSuccess(${w.id})">✓ Success — Sudah Ditransfer</button></div>` : ''}
