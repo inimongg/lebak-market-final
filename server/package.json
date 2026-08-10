@@ -1,7 +1,7 @@
 {
   "name": "lebak-market-server",
   "version": "1.0.0",
-  "description": "Backend Lebak.market — auth OTP, produk, rekber/escrow, webhook pembayaran, chat, kuliner",
+  "description": "Backend Lebak-Market — auth OTP, produk, rekber/escrow, webhook pembayaran, chat, kuliner",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

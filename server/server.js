@@ -1,5 +1,5 @@
 /**
- * Lebak.market — Backend API (v2: 100% real & realtime)
+ * Lebak-Market — Backend API (v2: 100% real & realtime)
  * ---------------------------------------------------------------
  * Node.js + Express + SQLite (node:sqlite, bawaan Node 22+).
  *
@@ -219,17 +219,17 @@ function emailProblem(email){
   if (DISPOSABLE.includes(domain)) return 'Email sekali-pakai tidak diizinkan — pakai email aktifmu';
   return null;
 }
-const otpHtml = code => `
+const otpHtml = (code, purpose = 'verify') => `
   <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
-    <h2 style="color:#2b2440;margin:0 0 4px">Lebak.market</h2>
+    <h2 style="color:#2b2440;margin:0 0 4px">Lebak-Market</h2>
     <p style="color:#6f6787;margin:0 0 20px">Marketplace warga Kabupaten Lebak</p>
-    <p>Masukkan kode berikut untuk memverifikasi emailmu:</p>
+    <p>${purpose === 'reset' ? 'Masukkan kode berikut untuk mengatur ulang passwordmu:' : 'Masukkan kode berikut untuk memverifikasi emailmu:'}</p>
     <p style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#fff9f2;border-radius:10px;padding:16px;color:#2b2440">${code}</p>
-    <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. Abaikan email ini jika kamu tidak mendaftar.</p>
+    <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. ${purpose === 'reset' ? 'Abaikan email ini jika kamu tidak meminta reset password.' : 'Abaikan email ini jika kamu tidak mendaftar.'}</p>
   </div>`;
 
-async function sendOtpEmail(email, code){
-  const subject = `${code} — Kode Verifikasi Lebak.market`;
+async function sendOtpEmail(email, code, purpose = 'verify'){
+  const subject = purpose === 'reset' ? `${code} — Reset Password Lebak-Market` : `${code} — Kode Verifikasi Lebak-Market`;
   try {
     /* Jalur 1: Brevo lewat HTTPS — tidak terpengaruh pemblokiran SMTP
        (Railway trial dkk.). Butuh BREVO_API_KEY + MAIL_SENDER (email
@@ -239,8 +239,8 @@ async function sendOtpEmail(email, code){
         method: 'POST',
         headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sender: { name: 'Lebak.market', email: process.env.MAIL_SENDER || process.env.GMAIL_USER },
-          to: [{ email }], subject, htmlContent: otpHtml(code),
+          sender: { name: 'Lebak-Market', email: process.env.MAIL_SENDER || process.env.GMAIL_USER },
+          to: [{ email }], subject, htmlContent: otpHtml(code, purpose),
         }),
       });
       if (!r.ok) throw new Error('Brevo ' + r.status + ': ' + (await r.text()).slice(0, 200));
@@ -253,8 +253,8 @@ async function sendOtpEmail(email, code){
         method: 'POST',
         headers: { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: process.env.MAIL_SENDER || 'Lebak.market <onboarding@resend.dev>',
-          to: [email], subject, html: otpHtml(code),
+          from: process.env.MAIL_SENDER || 'Lebak-Market <onboarding@resend.dev>',
+          to: [email], subject, html: otpHtml(code, purpose),
         }),
       });
       if (!r.ok) throw new Error('Resend ' + r.status + ': ' + (await r.text()).slice(0, 200));
@@ -264,13 +264,13 @@ async function sendOtpEmail(email, code){
     /* Jalur 3: SMTP (Gmail App Password / SMTP umum). */
     if (mailer){
       await mailer.sendMail({
-        from: process.env.MAIL_FROM || `"Lebak.market" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`,
-        to: email, subject, html: otpHtml(code),
+        from: process.env.MAIL_FROM || `"Lebak-Market" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`,
+        to: email, subject, html: otpHtml(code, purpose),
       });
       console.log(`[email→${email}] OTP terkirim via ${process.env.GMAIL_USER ? 'Gmail' : 'SMTP'}`);
       return;
     }
-    console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code} (mode pilot — email belum dikonfigurasi)`);
+    console.log(`[email→${email}] Kode ${purpose === 'reset' ? 'reset password' : 'verifikasi'} Lebak-Market: ${code} (mode pilot — email belum dikonfigurasi)`);
   } catch (e) {
     // Penyelamat: catat kodenya di log server agar admin bisa membantu
     // pendaftar yang emailnya tidak sampai (mis. SMTP diblokir jaringan).
@@ -295,8 +295,9 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance, avatar FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance, avatar, blocked, block_reason FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
+    if (req.user.blocked) return bad(res, 403, 'Akun ini diblokir admin' + (req.user.block_reason ? ': ' + req.user.block_reason : ''));
     next();
   } catch { return bad(res, 401, 'Sesi berakhir — silakan login kembali'); }
 }
@@ -447,7 +448,50 @@ app.post('/api/auth/login', async (req, res) => {
   } else if (!await bcrypt.compare(pw, u.pass_hash)) {
     return bad(res, 401, 'Password salah');
   }
+  if (u.blocked) return bad(res, 403, 'Akun ini diblokir admin' + (u.block_reason ? ': ' + u.block_reason : ''));
   res.json({ ok: true, token: signToken(u.id), user: userPayload(u) });
+});
+
+/* --- LUPA PASSWORD: minta kode via email, lalu set password baru --- */
+app.post('/api/auth/forgot', (req, res) => {
+  const em = String(req.body.email || '').trim().toLowerCase();
+  if (emailProblem(em)) return bad(res, 400, 'Format email belum benar');
+  const u = db.prepare('SELECT id FROM users WHERE email = ?').get(em);
+  let devCode;
+  // Jangan bocorkan apakah email terdaftar atau tidak — selalu balas sukses,
+  // tapi kode hanya benar-benar dikirim/dibuat kalau akunnya memang ada.
+  if (u) {
+    devCode = String(Math.floor(100000 + Math.random() * 900000));
+    db.prepare('INSERT OR REPLACE INTO password_resets (email, code, expires_at, attempts) VALUES (?,?,?,0)')
+      .run(em, devCode, now() + 10 * 60e3);
+    sendOtpEmail(em, devCode, 'reset');
+  }
+  res.json({
+    ok: true,
+    message: 'Jika email terdaftar, kode reset password sudah dikirim ke ' + em,
+    ...(OTP_IN_RESPONSE && devCode ? { devCode } : {}),
+  });
+});
+app.post('/api/auth/reset-password', async (req, res) => {
+  const em = String(req.body.email || '').trim().toLowerCase();
+  const code = String(req.body.code || '').trim();
+  const password = String(req.body.password || '');
+  if (password.length < 6) return bad(res, 400, 'Password minimal 6 karakter');
+  const row = db.prepare('SELECT * FROM password_resets WHERE email = ?').get(em);
+  if (!row) return bad(res, 404, 'Tidak ada permintaan reset untuk email ini — minta kode dulu');
+  if (row.expires_at < now()) return bad(res, 410, 'Kode kedaluwarsa — minta kode baru');
+  if (row.attempts >= 5) return bad(res, 429, 'Terlalu banyak percobaan — minta kode baru');
+  if (row.code !== code) {
+    db.prepare('UPDATE password_resets SET attempts = attempts + 1 WHERE email = ?').run(em);
+    return bad(res, 400, 'Kode salah');
+  }
+  const u = db.prepare('SELECT id, blocked, block_reason FROM users WHERE email = ?').get(em);
+  if (!u) return bad(res, 404, 'Akun tidak ditemukan');
+  const pass_hash = await bcrypt.hash(password, 10);
+  db.prepare('UPDATE users SET pass_hash = ? WHERE id = ?').run(pass_hash, u.id);
+  db.prepare('DELETE FROM password_resets WHERE email = ?').run(em);
+  if (u.blocked) return res.json({ ok: true, message: 'Password berhasil diubah, tapi akun ini sedang diblokir admin' + (u.block_reason ? ': ' + u.block_reason : '') });
+  res.json({ ok: true, token: signToken(u.id), user: userPayload(db.prepare('SELECT * FROM users WHERE id = ?').get(u.id)), message: 'Password berhasil diubah' });
 });
 
 app.get('/api/me', auth, (req, res) => res.json({ user: req.user }));
@@ -473,7 +517,7 @@ const PRODUCT_SELECT = `
   FROM products p JOIN users u ON u.id = p.seller_id`;
 
 app.get('/api/products', optionalAuth, (req, res) => {
-  const { cat, radius, q } = req.query;
+  const { cat, radius, q, mine } = req.query;
   // posisi penonton: GPS live dari frontend > pusat kecamatan akunnya > Rangkasbitung
   let viewer = parseCoords(req.query.lat, req.query.lng);
   if (!viewer && req.userId) {
@@ -489,6 +533,10 @@ app.get('/api/products', optionalAuth, (req, res) => {
     p.dist = Math.max(0.01, +havKm(viewer, c).toFixed(2));
   });
   rows.sort((a, b) => b.lebak - a.lebak || a.dist - b.dist || b.created_at - a.created_at);
+  if (mine === '1') {
+    if (!req.userId) return bad(res, 401, 'Perlu login dulu');
+    rows = rows.filter(p => p.seller_id === req.userId);
+  }
   if (cat && cat !== 'all') rows = rows.filter(p => p.cat === cat);
   const r = parseFloat(radius);
   if (!isNaN(r)) rows = rows.filter(p => p.dist <= r);
@@ -594,7 +642,7 @@ app.post('/api/orders', auth, async (req, res) => {
   const paySaldo = payMethod === 'saldo';
   const payGateway = payMethod === 'manual'; // tombol "Transfer / QRIS" di UI — sekarang QRIS dinamis via VPay
   if (!paySaldo && !payGateway) return bad(res, 400, 'Metode pembayaran tidak dikenal');
-  const gw = paySaldo ? { name: 'Saldo Lebak.market' } : { name: 'VPay QRIS' };
+  const gw = paySaldo ? { name: 'Saldo Lebak-Market' } : { name: 'VPay QRIS' };
   if (!recvName || !recvAddr) return bad(res, 400, 'Isi nama & alamat/kontak penerima');
 
   const bd = isJasa ? { base: 0, seller: 0, subsidy: 0 } : shipBreakdown(p, mode);
@@ -958,8 +1006,115 @@ app.post('/api/orders/:id/complain', auth, (req, res) => {
   const o = getOrder(req.params.id);
   if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Komplain hanya saat barang sudah dikirim');
-  addEvent(o.id, 'Komplain — Ditinjau', 'Komplain dibuka — dana ditahan sampai sengketa selesai.');
+  const reason = String(req.body.reason || '').trim().slice(0, 800);
+  if (reason.length < 5) return bad(res, 400, 'Jelaskan alasan komplainmu (minimal 5 karakter)');
+  db.prepare('UPDATE orders SET dispute_reason = ? WHERE id = ?').run(reason, o.id);
+  addEvent(o.id, 'Komplain — Ditinjau', 'Komplain dibuka: "' + reason + '" — dana ditahan sampai sengketa selesai.');
   res.json({ ok: true, order: getOrder(o.id) });
+});
+
+/* --- ADMIN: tinjau & putuskan sengketa (komplain pembeli) --- */
+app.get('/api/admin/disputes', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare(`
+    SELECT o.id, o.total, o.price, o.dispute_reason, o.created_at,
+           p.name pname, bu.id buyer_id, bu.name buyer_name, bu.email buyer_email,
+           su.id seller_id, su.name seller_name, su.email seller_email
+    FROM orders o
+    JOIN products p ON p.id = o.product_id
+    JOIN users bu ON bu.id = o.buyer_id
+    JOIN users su ON su.id = o.seller_id
+    WHERE o.status = 'Komplain — Ditinjau'
+    ORDER BY o.created_at ASC LIMIT 200`).all();
+  res.json({ disputes: rows });
+});
+app.post('/api/admin/disputes/:id/resolve', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!o) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (o.status !== 'Komplain — Ditinjau') return bad(res, 409, 'Pesanan ini tidak dalam status sengketa');
+  const action = req.body.action; // 'refund' (menangkan pembeli) | 'release' (menangkan penjual)
+  const note = String(req.body.note || '').trim().slice(0, 500);
+  const full = getOrder(o.id);
+  if (action === 'refund') {
+    walletTxn(o.buyer_id, 'refund', o.total, 'Refund sengketa: ' + (full.pname || '').slice(0, 40), o.id);
+    db.prepare('UPDATE orders SET dispute_note = ? WHERE id = ?').run(note, o.id);
+    addEvent(o.id, 'Dibatalkan — Refund', 'Admin memutuskan sengketa untuk pembeli — dana dikembalikan ke saldo pembeli.' + (note ? ' Catatan admin: ' + note : ''));
+  } else if (action === 'release') {
+    const commission = Math.round(o.price * SELLER_COMMISSION);
+    const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship ? Math.round(o.price * FREESHIP_EXTRA) : 0;
+    const driverCut = o.mode === 'driver' ? Math.round(o.ship * DRIVER_COMMISSION) : 0;
+    const net = o.price - commission - extra;
+    addRevenue(o.id, 'commission', commission);
+    addRevenue(o.id, 'freeship_extra', extra);
+    addRevenue(o.id, 'driver_cut', driverCut);
+    walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair (sengketa dimenangkan penjual): ' + (full.pname || '').slice(0, 40), o.id);
+    db.prepare('UPDATE orders SET dispute_note = ? WHERE id = ?').run(note, o.id);
+    addEvent(o.id, 'Selesai — Dana Cair', 'Admin memutuskan sengketa untuk penjual — dana dicairkan.' + (note ? ' Catatan admin: ' + note : ''));
+  } else {
+    return bad(res, 400, 'Aksi tidak dikenal (refund/release)');
+  }
+  res.json({ ok: true, order: getOrder(o.id) });
+});
+
+/* --- LAPORKAN PENGGUNA (penipuan, pelecehan, dsb.) --- */
+app.post('/api/reports', auth, (req, res) => {
+  const reportedId = parseInt(req.body.reportedId, 10);
+  const orderId = req.body.orderId ? String(req.body.orderId) : null;
+  const reason = String(req.body.reason || '').trim().slice(0, 800);
+  if (!reportedId || reportedId === req.user.id) return bad(res, 400, 'Target laporan tidak valid');
+  if (reason.length < 5) return bad(res, 400, 'Jelaskan alasan laporanmu (minimal 5 karakter)');
+  const target = db.prepare('SELECT id FROM users WHERE id = ?').get(reportedId);
+  if (!target) return bad(res, 404, 'Pengguna tidak ditemukan');
+  if (orderId) {
+    const o = db.prepare('SELECT buyer_id, seller_id FROM orders WHERE id = ?').get(orderId);
+    if (!o || (o.buyer_id !== req.user.id && o.seller_id !== req.user.id)) return bad(res, 404, 'Pesanan tidak ditemukan');
+  }
+  db.prepare('INSERT INTO reports (reporter_id, reported_id, order_id, reason, status, at) VALUES (?,?,?,?,?,?)')
+    .run(req.user.id, reportedId, orderId, reason, 'Menunggu', now());
+  res.json({ ok: true, message: 'Laporan terkirim — admin akan meninjau secepatnya' });
+});
+
+/* --- ADMIN: tinjau laporan, blokir/lepas blokir akun --- */
+app.get('/api/admin/reports', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare(`
+    SELECT r.id, r.reason, r.order_id, r.at,
+           ru.name reporter_name, ru.email reporter_email,
+           tu.id target_id, tu.name target_name, tu.email target_email, tu.phone target_phone, tu.blocked target_blocked
+    FROM reports r
+    JOIN users ru ON ru.id = r.reporter_id
+    JOIN users tu ON tu.id = r.reported_id
+    WHERE r.status = 'Menunggu' ORDER BY r.at ASC LIMIT 200`).all();
+  res.json({ reports: rows });
+});
+app.post('/api/admin/reports/:id/block', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const r = db.prepare('SELECT * FROM reports WHERE id = ?').get(req.params.id);
+  if (!r) return bad(res, 404, 'Laporan tidak ditemukan');
+  const reason = String(req.body.reason || r.reason || '').trim().slice(0, 300);
+  db.prepare('UPDATE users SET blocked = 1, block_reason = ? WHERE id = ?').run(reason, r.reported_id);
+  db.prepare("UPDATE reports SET status = 'Ditindak' WHERE id = ?").run(r.id);
+  res.json({ ok: true });
+});
+app.post('/api/admin/reports/:id/dismiss', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const r = db.prepare('SELECT id FROM reports WHERE id = ?').get(req.params.id);
+  if (!r) return bad(res, 404, 'Laporan tidak ditemukan');
+  db.prepare("UPDATE reports SET status = 'Ditolak' WHERE id = ?").run(r.id);
+  res.json({ ok: true });
+});
+app.get('/api/admin/users/blocked', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare('SELECT id, name, email, phone, block_reason FROM users WHERE blocked = 1 ORDER BY id DESC LIMIT 200').all();
+  res.json({ users: rows });
+});
+app.post('/api/admin/users/:id/unblock', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const u = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return bad(res, 404, 'Pengguna tidak ditemukan');
+  db.prepare('UPDATE users SET blocked = 0, block_reason = NULL WHERE id = ?').run(u.id);
+  res.json({ ok: true });
 });
 
 /* --- Pembeli membatalkan pesanan yang BELUM dibayar --- */
@@ -1056,6 +1211,6 @@ app.get('/api/revenue', (req, res) => {
 
 /* ================= START ================= */
 app.listen(PORT, () => {
-  console.log(`🌾 Lebak.market API + frontend siap di http://localhost:${PORT}`);
+  console.log(`🌾 Lebak-Market API + frontend siap di http://localhost:${PORT}`);
   console.log(`   Mode: ${IS_DEV ? 'DEV (OTP dibalas di respons API)' : 'PRODUKSI'} · Realtime: SSE aktif`);
 });

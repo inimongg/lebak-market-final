@@ -192,6 +192,33 @@ try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lng REAL'); } catch {}
 try { db.exec('ALTER TABLE wallet_txns ADD COLUMN status TEXT'); } catch {} // status penarikan: Diproses | Sukses
 
 /* ==================================================================
+ * FITUR: LUPA PASSWORD, LAPORKAN/BLOKIR PENGGUNA, RESOLUSI SENGKETA
+ * ================================================================== */
+try { db.exec('ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE users ADD COLUMN block_reason TEXT'); } catch {}
+try { db.exec('ALTER TABLE orders ADD COLUMN dispute_reason TEXT'); } catch {} // alasan komplain dari pembeli
+try { db.exec('ALTER TABLE orders ADD COLUMN dispute_note TEXT'); } catch {}   // catatan keputusan admin
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    email TEXT PRIMARY KEY,
+    code TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporter_id INTEGER NOT NULL REFERENCES users(id),
+    reported_id INTEGER NOT NULL REFERENCES users(id),
+    order_id TEXT,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Menunggu',   -- Menunggu | Ditindak | Ditolak
+    at INTEGER NOT NULL
+  );
+`);
+
+/* ==================================================================
  * BACKUP OTOMATIS DATABASE
  * ---------------------------------------------------------------
  * Kenapa perlu ini WALAUPUN sudah pasang Volume di Railway:
