@@ -12,12 +12,6 @@
 <meta property="og:title" content="Lebak-Market. — Marketplacena Urang Lebak">
 <meta property="og:description" content="Jual-beli warga Kabupaten Lebak: rekber aman, COD terdekat, driver lokal, kuliner & wisata.">
 <meta property="og:type" content="website">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lebak.market">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121316'/%3E%3Ctext x='31' y='45' font-family='Arial,sans-serif' font-size='36' font-weight='800' fill='%23ffffff' text-anchor='middle'%3EL%3C/text%3E%3Ccircle cx='50' cy='45' r='4' fill='%23ff8a00'/%3E%3C/svg%3E">
 <style>
 /* ================================================================
@@ -39,13 +33,11 @@
   --green-2:#000000;
   --tint:#f4f4f5;
   --tint-line:#e4e5e7;
-  /* Aksen warna: orange — dipakai terbatas utk badge, rating bintang,
-     notifikasi, dan tombol CTA khusus (mis. tombol "Jual"). */
-  --amber:#ea580c;
-  --amber-tint:#fdece0;
-  --gold-grad:linear-gradient(135deg,#fb923c 0%,#ea580c 45%,#9a3412 100%);
-  --gold-grad-soft:linear-gradient(135deg,#fb923c,#c2410c);
-  --price:#121316;
+  --amber:#c9a227;          /* aksen gold: badge, rating, notifikasi */
+  --amber-tint:#faf3df;
+  --gold-grad:linear-gradient(135deg,#f4d675 0%,#c9a227 45%,#8a6a13 100%);
+  --gold-grad-soft:linear-gradient(135deg,#e8c866,#b8922a);
+  --price:#a5811f;
   --radius:16px;
   --shadow:0 1px 2px rgba(0,0,0,.05);
   --shadow-lg:0 18px 44px rgba(0,0,0,.13);
@@ -73,14 +65,14 @@ h1,h2,h3,h4{line-height:1.25;font-weight:700;letter-spacing:-.01em}
 .btn-yellow{background:var(--card);border-color:var(--line);color:var(--ink)}
 .btn-yellow:hover{border-color:var(--green);color:var(--green);background:var(--card)}
 .btn-mint{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
-.btn-mint:hover{background:#f0f0ee;border-color:var(--green)}
+.btn-mint:hover{background:#dcecdf;border-color:var(--green)}
 .btn-sm{padding:8px 16px;font-size:13px;border-radius:999px}
 .chip{
   display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:999px;
   border:1px solid var(--line);background:var(--card);font-weight:600;font-size:13.5px;
   color:var(--muted);transition:all .15s;white-space:nowrap;
 }
-.chip:hover{border-color:var(--amber);color:#9a3412}
+.chip:hover{border-color:var(--amber);color:#8a6f1a}
 .chip.active{background:var(--amber);border-color:var(--amber);color:#121316}
 .chip.mini{padding:5px 13px;font-size:12px}
 .chip.mini.active{background:var(--amber);border-color:var(--amber);color:#121316}
@@ -211,7 +203,7 @@ header{
   transition:background .12s;width:100%;
 }
 .lnav-item:hover{background:var(--icon-bg)}
-.lnav-item.on{background:var(--amber-tint);color:#121316}
+.lnav-item.on{background:var(--amber-tint);color:#a5811f}
 .lnav-item .lic{
   width:36px;height:36px;border-radius:50%;background:var(--icon-bg);color:var(--ink);
   display:grid;place-items:center;flex:none;
@@ -321,7 +313,7 @@ header{
 .act.liked{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
 .post-cta{display:flex;gap:9px;flex-wrap:wrap}
 .post-cta .btn{flex:1;min-width:110px}
-.fav-btn.on{background:var(--amber-tint);border-color:#f6c9a0;color:var(--amber)}
+.fav-btn.on{background:var(--amber-tint);border-color:#ecd9b6;color:var(--amber)}
 .seller-row{
   background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 13px;
   display:flex;gap:11px;align-items:center;
@@ -339,9 +331,9 @@ header{
 /* tile fallback produk tanpa foto — dua nada netral bergantian */
 .g-1,.g-3,.g-5{background:#edf1ee}
 .g-2,.g-4,.g-6{background:#f0efe9}
-.letter{font-size:52px;font-weight:700;color:#c9ced4;font-family:Georgia,serif}
+.letter{font-size:52px;font-weight:700;color:#b9c4bc;font-family:Georgia,serif}
 .resto-media .letter{font-size:36px}
-.letter-s{font-size:16px;font-weight:700;color:#9aa0a6;font-family:Georgia,serif}
+.letter-s{font-size:16px;font-weight:700;color:#9aa89e;font-family:Georgia,serif}
 .em img,.thumb-img{width:100%;height:100%;object-fit:cover;border-radius:9px}
 
 /* ============ ELEMEN INFO (dipakai modal & footer) ============ */
@@ -361,10 +353,10 @@ header{
 .fab{
   position:fixed;right:22px;bottom:22px;z-index:85;
   display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;
-  background:var(--ink);color:#fff;font-weight:800;font-size:14.5px;border:1px solid var(--ink);
-  box-shadow:0 10px 26px -6px rgba(0,0,0,.45);transition:transform .15s,filter .15s;
+  background:var(--gold-grad);color:#121316;font-weight:800;font-size:14.5px;border:1px solid #b8922a;
+  box-shadow:0 10px 26px -6px rgba(180,140,30,.55);transition:transform .15s,filter .15s;
 }
-.fab:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.fab:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .bottom-nav{display:none}
 
 /* ============ MODAL & DRAWER ============ */
@@ -461,11 +453,11 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .pay-opt.sel .rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--green)}
 .safe-note{
   background:var(--tint);border:1px solid var(--tint-line);border-radius:10px;padding:11px 14px;
-  font-size:12.5px;margin-top:13px;color:#121316;
+  font-size:12.5px;margin-top:13px;color:#2f5c3f;
 }
 .warn-note{
-  background:var(--amber-tint);border:1px solid #f6c9a0;border-radius:10px;padding:11px 14px;
-  font-size:12.5px;margin-top:13px;color:#9a3412;
+  background:var(--amber-tint);border:1px solid #ecd9b6;border-radius:10px;padding:11px 14px;
+  font-size:12.5px;margin-top:13px;color:#7c4a10;
 }
 .sum-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--muted);gap:14px}
 .sum-row.total{font-size:15px;font-weight:700;color:var(--ink);border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
@@ -566,7 +558,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .quest-banner:active{transform:scale(.98)}
 .quest-banner b{font-size:14.5px}
 .quest-banner p{font-size:12px;opacity:.75;margin-top:2px}
-.quest-banner .q-go{margin-left:auto;background:var(--gold-grad);color:#121316;border:none;border-radius:0;padding:8px 16px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
+.quest-banner .q-go{margin-left:auto;background:var(--gold-grad);color:#121316;border:none;border-radius:0;padding:8px 16px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
 .q-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .q-top b{font-size:15px}
@@ -575,7 +567,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .q-foot{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 .q-foot .btn{margin-left:auto}
 .q-badge{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px}
-.q-badge.ok{background:#f1f1f2;color:#121316}
+.q-badge.ok{background:#e6f6ec;color:#0b8f4d}
 .q-badge.wait{background:#fff4e0;color:#b45309}
 .q-badge.no{background:#fdecec;color:#c0392b}
 .q-badge.full{background:var(--hover);color:var(--muted)}
@@ -646,10 +638,10 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .top-nav{display:flex;gap:4px;margin:0 auto}
 .top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
 .top-nav button:hover{color:var(--ink);background:var(--amber-tint)}
-.top-nav button.on{color:#121316;font-weight:800}
+.top-nav button.on{color:#a5811f;font-weight:800}
 /* tablet: nav 4 tombol harus tetap muat satu baris */
 @media(max-width:880px){.top-nav button{padding:8px 7px;font-size:13px}.head-actions{gap:6px}}
-.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px;border:1px solid #3a3d42;box-shadow:0 10px 30px -8px rgba(0,0,0,.35)}
+.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px;border:1px solid #d9c078;box-shadow:0 10px 30px -8px rgba(180,140,30,.35)}
 .hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55) 85%);pointer-events:none}
 .hero::before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--gold-grad);z-index:2}
 .hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.55}
@@ -663,7 +655,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .shop-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;padding-left:14px}
 .shop-head h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;background:var(--gold-grad);border-radius:2px}
 .shop-search{max-width:360px;flex:1;min-width:230px;background:var(--card);border:1px solid var(--line)}
-.go-cta{border:none;background:var(--gold-grad);color:#121316;border-radius:999px;padding:8px 20px;font:inherit;font-weight:800;font-size:13px;flex:none;box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
+.go-cta{border:none;background:var(--gold-grad);color:#121316;border-radius:999px;padding:8px 20px;font:inherit;font-weight:800;font-size:13px;flex:none;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .shop-grid{display:grid;grid-template-columns:225px minmax(0,1fr);gap:24px;align-items:start}
 @media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:118px}}
 .filter-side{position:sticky;top:110px}
@@ -686,7 +678,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   position:relative;aspect-ratio:1/1;background:var(--tint);border-radius:14px;overflow:hidden;
   display:grid;place-items:center;margin-bottom:7px;transition:all .2s;border:1px solid transparent;
 }
-@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-4px);border-color:#3a3d42;box-shadow:0 14px 28px -10px rgba(0,0,0,.4)}}
+@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-4px);border-color:#d9c078;box-shadow:0 14px 28px -10px rgba(180,140,30,.4)}}
 .pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pcard-media .cat-pill{
   position:absolute;top:7px;right:7px;background:#fff;border-radius:999px;padding:3px 9px;
@@ -706,8 +698,8 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 }
 .pb-out{background:var(--card);border:1px solid var(--line);color:var(--ink)}
 .pb-out:hover{border-color:var(--ink)}
-.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:#121316}
-.pb-dark{background:var(--gold-grad);border:1px solid #9a3412;color:#121316;font-weight:800}
+.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:#a5811f}
+.pb-dark{background:var(--gold-grad);border:1px solid #b8922a;color:#121316;font-weight:800}
 .pb-dark:hover{filter:brightness(1.08)}
 .pb-dark:disabled{opacity:.4}
 
@@ -729,7 +721,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 }
 .cta-banner h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:#fff}
 .cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
-.cta-btn{border:1px solid #9a3412;background:var(--gold-grad);color:#121316;border-radius:0;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s;box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
+.cta-btn{border:1px solid #b8922a;background:var(--gold-grad);color:#121316;border-radius:0;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s;box-shadow:0 4px 14px -4px rgba(180,140,30,.5)}
 .cta-btn:active{transform:scale(.96)}
 
 /* footer */
@@ -787,9 +779,9 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
     background:var(--amber);color:#121316;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;
   }
   .bn-sell{
-    width:48px;height:48px;border-radius:50%;background:var(--ink);border:2px solid #fff;
-    color:#fff;display:grid;place-items:center;margin-top:-22px;
-    box-shadow:0 10px 22px -4px rgba(0,0,0,.5);flex:none;
+    width:48px;height:48px;border-radius:50%;background:var(--gold-grad);border:2px solid #fff;
+    color:#121316;display:grid;place-items:center;margin-top:-22px;
+    box-shadow:0 10px 22px -4px rgba(180,140,30,.6);flex:none;
   }
   .head-inner{gap:8px;height:54px}
   .search{max-width:none}
@@ -1059,7 +1051,7 @@ function shipBreakdown(p, mode){
   const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
   return { base, seller: 0, subsidy };
 }
-const AC = ['#eceae3','#f0efe9'];
+const AC = ['#e9f3ec','#f0efe9'];
 const acOf = id => AC[(id||0) % AC.length];
 const initOf = n => (String(n||'?').trim()[0] || '?').toUpperCase();
 const avaEl = (name, avatar) => avatar ? `<img src="${esc(avatar)}" alt="">` : initOf(name);
@@ -1896,7 +1888,6 @@ function openProduct(id, imgIdx = 0){
           <button class="act ${p.liked?'liked':''}" onclick="likeFromDetail(${p.id})">${IC.like} ${p.likes} suka</button>
           <button class="act ${faved?'liked':''}" onclick="favFromDetail(${p.id})">${faved?IC.heartF:IC.heart} ${faved?'Tersimpan':'Favorit'}</button>
           <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
-          ${mine ? '' : `<button class="act" onclick="openReportModal('product', ${p.id}, '${esc(p.name)}')">🚩 Laporkan</button>`}
         </div>
         <div class="post-cta">
           ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>
@@ -2028,56 +2019,6 @@ function closeModal(){
   document.getElementById('modalRoot').innerHTML = '';
 }
 
-/* ---------- LAPORKAN & BLOKIR ---------- */
-const REPORT_REASONS = [
-  ['penipuan', 'Penipuan'], ['barang_ilegal', 'Barang ilegal / dilarang'],
-  ['spam', 'Spam / iklan mengganggu'], ['pelecehan', 'Pelecehan / ujaran kasar'], ['lainnya', 'Lainnya'],
-];
-function openReportModal(targetType, targetId, targetLabel){
-  if (needLogin('melaporkan')) return;
-  document.getElementById('modalRoot').insertAdjacentHTML('beforeend', `
-  <div class="overlay" id="reportOverlay" onclick="if(event.target===this)this.remove()">
-    <div class="modal" style="max-width:380px">
-      <div class="modal-head"><h3>Laporkan ${targetType === 'user' ? 'Akun' : 'Produk'}</h3><button class="x-btn" onclick="document.getElementById('reportOverlay').remove()">✕</button></div>
-      <div class="modal-body">
-        <p style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Melaporkan: <b>${esc(targetLabel)}</b></p>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
-          ${REPORT_REASONS.map(([v, l], i) => `
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <input type="radio" name="reportReason" value="${v}" ${i===0?'checked':''}> ${l}
-            </label>`).join('')}
-        </div>
-        <textarea id="reportNote" rows="3" placeholder="Keterangan tambahan (opsional)" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:inherit"></textarea>
-        <div class="post-cta" style="margin-top:12px">
-          <button class="btn btn-coral" onclick="submitReport('${targetType}', ${targetId})">Kirim Laporan</button>
-        </div>
-      </div>
-    </div>
-  </div>`);
-}
-async function submitReport(targetType, targetId){
-  const reason = document.querySelector('input[name="reportReason"]:checked')?.value || 'lainnya';
-  const note = document.getElementById('reportNote').value.trim();
-  try {
-    await api('/reports', { method:'POST', body:{ target_type: targetType, target_id: targetId, reason, note } });
-    document.getElementById('reportOverlay')?.remove();
-    toast('Laporan terkirim — admin akan meninjau');
-  } catch (e) { toast(e.message); }
-}
-async function blockUser(peerId, peerName){
-  if (needLogin('memblokir')) return;
-  if (!confirm(`Blokir ${peerName}? Jualannya tidak akan muncul di feedmu dan dia tidak bisa chat kamu lagi.`)) return;
-  try {
-    await api('/users/' + peerId + '/block', { method:'POST' });
-    toast(peerName + ' diblokir');
-    closeModal();
-  } catch (e) { toast(e.message); }
-}
-
-function toggleChatMenu(){
-  const m = document.getElementById('chatMenu');
-  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
-}
 /* ---------- CHAT ---------- */
 async function openChatWith(peerId, peerName){
   if (needLogin('chat dengan penjual')) return;
@@ -2091,12 +2032,7 @@ async function openChatWith(peerId, peerName){
           <span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:800;background:${acOf(peerId)};color:var(--green)">${initOf(peerName)}</span>
           ${esc(peerName)} <span class="live-pill"><i></i> live</span>
         </h3>
-        <button class="x-btn" onclick="toggleChatMenu()" title="Opsi">⋮</button>
         <button class="x-btn" onclick="closeModal()">✕</button>
-      </div>
-      <div id="chatMenu" style="display:none;position:absolute;right:14px;top:52px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:20;overflow:hidden">
-        <div onclick="document.getElementById('chatMenu').style.display='none';openReportModal('user', ${peerId}, '${esc(peerName)}')" style="padding:11px 16px;font-size:13px;cursor:pointer;white-space:nowrap">🚩 Laporkan Pengguna</div>
-        <div onclick="blockUser(${peerId}, '${esc(peerName)}')" style="padding:11px 16px;font-size:13px;cursor:pointer;white-space:nowrap;color:#c0392b;border-top:1px solid var(--line)">🚫 Blokir Pengguna</div>
       </div>
       <div class="drawer-body"><div class="chat-thread" id="thread"></div></div>
       <div class="drawer-foot">
@@ -2246,8 +2182,8 @@ function renderBuy(){
       <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-top:14px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
         <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':p.ship_cost!=null?'Ongkir (ditetapkan penjual)':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
-        ${bd.seller ? `<div class="sum-row" style="color:#121316;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
-        ${bd.subsidy ? `<div class="sum-row" style="color:#121316;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
+        ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
+        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         ${buy.pay==='manual'
           ? `<div class="sum-row"><span>Kode unik (untuk pencocokan transfer)</span><span>Rp1–499</span></div>`
@@ -2515,7 +2451,7 @@ function orderCard(o, asSeller){
       ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Sudah Ketemu &amp; Barang Oke</button>` : ''}
       ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via chat</span>` : ''}
       ${['Selesai','Selesai — Dana Cair','Dibatalkan'].includes(o.status) ? `<button class="btn btn-sm" onclick="hideOrder('${o.id}')">Hapus dari Riwayat</button>` : ''}
-      ${!asSeller && o.status.startsWith('Selesai') && !o.has_review ? `<button class="btn btn-sm" style="border-color:var(--amber);color:#121316" onclick="openReviewForm('${o.id}')">★ Beri Ulasan</button>` : ''}
+      ${!asSeller && o.status.startsWith('Selesai') && !o.has_review ? `<button class="btn btn-sm" style="border-color:var(--amber);color:#a5811f" onclick="openReviewForm('${o.id}')">★ Beri Ulasan</button>` : ''}
       ${!asSeller && o.status.startsWith('Selesai') && o.has_review ? `<span class="live-pill" style="opacity:.7">✓ sudah diulas</span>` : ''}
     </div>
   </div>`;
@@ -2762,7 +2698,7 @@ function openSell(){
         <label class="f">Kondisi</label>
         <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
         <label class="f">Harga (Rp)</label>
-        <input class="f" id="sPrice" type="number" min="1" placeholder="cth: 50000">
+        <input class="f" id="sPrice" type="number" min="1000" placeholder="cth: 50000">
         <label class="f">Stok</label>
         <input class="f" id="sStock" type="number" min="1" value="1">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
@@ -2885,14 +2821,6 @@ async function init(){
   }
 }
 init();
-
-/* Daftarkan Service Worker: bikin app bisa di-install ke homescreen &
- * tetap kebuka saat sinyal jelek. Aman untuk data live (lihat sw.js). */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
 </script>
 </body>
 </html>
