@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lebak.market — Marketplace Warga Lebak</title>
+<title>Lebak-Market — Marketplace Warga Lebak</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -867,12 +867,12 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div class="shop-head">
         <h2>Semua Kebutuhan Warga Lebak</h2>
         <div class="search shop-search">
-          <input id="searchInput" type="text" placeholder="Cari di Lebak.market...">
+          <input id="searchInput" type="text" placeholder="Cari di Lebak-Market...">
           <button class="go-cta" onclick="loadFeed()">Cari</button>
         </div>
       </div>
       <div class="quest-banner" onclick="showView('misi')">
-        <div><b>Side Quest 💼</b><p>Kerjakan misi ringan dari Lebak.market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
+        <div><b>Side Quest</b><p>Kerjakan misi ringan dari Lebak-Market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
         <button class="q-go">Lihat Misi →</button>
       </div>
       <div class="shop-grid">
@@ -897,7 +897,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
           </section>
           <div class="cta-banner">
             <div>
-              <h2>Siap Jualan di Lebak.market?</h2>
+              <h2>Siap Jualan di Lebak-Market?</h2>
               <p>Gratis posting, jangkau warga se-Kabupaten Lebak — dana aman lewat rekber.</p>
             </div>
             <button class="cta-btn" onclick="openSell()">+ Mulai Jualan</button>
@@ -925,7 +925,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
               </div>
             </div>
             <div class="foot-bot">
-              <span>© 2026 Lebak.market. All Rights Reserved.</span>
+              <span>© 2026 Lebak-Market. All Rights Reserved.</span>
               <span>Marketplace warga Kabupaten Lebak · <span id="appVer"></span></span>
             </div>
           </footer>
@@ -994,7 +994,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 
 <script>
 /* ================================================================
-   Lebak.market — frontend v4: foto produk asli, ikon SVG bersih,
+   Lebak-Market — frontend v4: foto produk asli, ikon SVG bersih,
    avatar inisial. 100% postingan pengguna asli + realtime (SSE).
    Jalankan:  cd server && npm install && npm start
    ================================================================ */
@@ -1071,7 +1071,9 @@ async function api(path, { method = 'GET', body } = {}){
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok){
-    if (res.status === 401){ token = null; user = null; store.set('token', null); store.set('user', null); renderAuthSlot(); }
+    if (res.status === 401 || (res.status === 403 && /diblokir/i.test(data.error || ''))){
+      token = null; user = null; store.set('token', null); store.set('user', null); renderAuthSlot();
+    }
     throw new Error(data.error || 'Terjadi kesalahan (' + res.status + ')');
   }
   return data;
@@ -1282,7 +1284,8 @@ function openAuth(tab, first){
           <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
           <label class="f">Password</label>
           <input class="f" id="aPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doLogin()">Masuk</button>
+          <p style="font-size:12.5px;margin-top:8px"><a href="#" style="font-weight:700;color:var(--muted)" onclick="openForgot();return false">Lupa password?</a></p>
+          <button class="btn btn-coral" style="width:100%;margin-top:12px" onclick="doLogin()">Masuk</button>
           <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">Belum punya akun? <a href="#" style="font-weight:800;color:var(--coral)" onclick="openAuth('register');return false">Daftar gratis →</a></p>
           ${first ? `<button class="btn btn-sm" style="width:100%;margin-top:10px" onclick="closeModal()">Lihat-lihat dulu saja</button>` : ''}
         `}
@@ -1313,11 +1316,11 @@ async function doRegister(){
 function openOtp(){
   if (!pendingReg) return;
   document.getElementById('modalRoot').innerHTML = `
-  <div class="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="overlay">
     <div class="modal">
-      <div class="modal-head"><h3>Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Verifikasi Email</h3></div>
       <div class="modal-body">
-        <div class="safe-note" style="margin:0 0 14px">Akun sudah aktif — verifikasi email bisa dilakukan kapan saja.</div>
+        <div class="safe-note" style="margin:0 0 14px">Verifikasi email wajib dilakukan sebelum bisa memakai akun.</div>
         <div class="auth-hero">
           <b>Cek email kamu</b>
           <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> (berlaku 10 menit). Tidak ada? Cek folder spam.</p>
@@ -1327,9 +1330,11 @@ function openOtp(){
           style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
           onkeydown="if(event.key==='Enter')verifyOtp()">
         <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi Email</button>
-        <button class="btn" style="width:100%;margin-top:10px" onclick="closeModal()">Lewati — verifikasi nanti</button>
         <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
           Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
+        </p>
+        <p style="font-size:12.5px;text-align:center;margin-top:10px;color:var(--muted)">
+          Salah daftar? <a href="#" style="font-weight:800;color:var(--coral)" onclick="doLogout()">Keluar</a>
         </p>
       </div>
     </div>
@@ -1375,6 +1380,88 @@ async function doLogin(){
     location.reload();
   } catch (e) { toast(e.message); }
 }
+/* ---------- LUPA PASSWORD ---------- */
+let pendingReset = null;
+function openForgot(){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Lupa Password</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Masukkan email akunmu — kami kirim kode 6 digit untuk atur ulang password.</p>
+        <label class="f">Email</label>
+        <input class="f" id="fEmail" type="email" placeholder="nama@email.com" onkeydown="if(event.key==='Enter')doForgot()">
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="doForgot()">Kirim Kode</button>
+        <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
+          <a href="#" style="font-weight:800;color:var(--coral)" onclick="openAuth('login');return false">← Kembali ke Masuk</a>
+        </p>
+      </div>
+    </div>
+  </div>`;
+}
+async function doForgot(){
+  const email = document.getElementById('fEmail').value.trim().toLowerCase();
+  if (!email) return toast('Isi email dulu');
+  try {
+    const r = await api('/auth/forgot', { method:'POST', body:{ email } });
+    pendingReset = { email };
+    toast(r.message);
+    openResetPassword();
+    if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode reset: ' + r.devCode), 700);
+  } catch (e) { toast(e.message); }
+}
+function openResetPassword(){
+  if (!pendingReset) return;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Atur Ulang Password</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <b>Cek email kamu</b>
+          <p>Kode 6 digit dikirim ke <b>${esc(pendingReset.email)}</b> (berlaku 10 menit). Tidak ada? Cek folder spam.</p>
+        </div>
+        <label class="f">Kode reset (6 digit)</label>
+        <input class="f" id="rCode" inputmode="numeric" maxlength="6" placeholder="______"
+          style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px">
+        <label class="f">Password baru (min. 6 karakter)</label>
+        <input class="f" id="rPass" type="password" placeholder="••••••••">
+        <label class="f">Ulangi password baru</label>
+        <input class="f" id="rPass2" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doResetPassword()">
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="doResetPassword()">Simpan Password Baru</button>
+        <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
+          Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="doForgot2();return false">Kirim ulang</a>
+        </p>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(() => document.getElementById('rCode')?.focus(), 300);
+}
+async function doForgot2(){
+  if (!pendingReset) return;
+  try {
+    const r = await api('/auth/forgot', { method:'POST', body:{ email: pendingReset.email } });
+    toast(r.devCode ? '[Mode pilot] Kode baru: ' + r.devCode : 'Kode baru dikirim ke emailmu');
+  } catch (e) { toast(e.message); }
+}
+async function doResetPassword(){
+  if (!pendingReset) return;
+  const password = document.getElementById('rPass').value;
+  if (password !== document.getElementById('rPass2').value) return toast('Ulangan password tidak sama');
+  try {
+    const r = await api('/auth/reset-password', { method:'POST', body:{
+      email: pendingReset.email, code: document.getElementById('rCode').value.trim(), password,
+    }});
+    pendingReset = null;
+    if (r.token) {
+      token = r.token; user = r.user;
+      store.set('token', token); store.set('user', user);
+      closeModal(); location.reload();
+    } else {
+      toast(r.message); openAuth('login');
+    }
+  } catch (e) { toast(e.message); }
+}
 function doLogout(){
   token = null; user = null;
   store.set('token', null); store.set('user', null);
@@ -1408,16 +1495,36 @@ async function openProfile(){
           ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
         </div>
         <div style="background:var(--tint);border:1px solid var(--tint-line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
-          <div style="flex:1"><span style="font-size:12px;color:var(--muted);font-weight:600">Saldo Lebak.market</span>
+          <div style="flex:1"><span style="font-size:12px;color:var(--muted);font-weight:600">Saldo Lebak-Market</span>
           <div style="font-size:22px;font-weight:800;color:var(--green)">${rupiah(user.balance || 0)}</div></div>
           <button class="btn btn-coral btn-sm" onclick="openWallet()">Tarik / Riwayat</button>
         </div>
         ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
-        <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
-        <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
+        <div class="mini-row" style="cursor:pointer" onclick="closeModal();openMyPosts()"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
+        <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('orders')"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
         <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('misi')"><span class="em g-5"><span class="letter-s">M</span></span><div><b>Side Quest</b><span>Kerjakan misi, hadiahnya masuk saldo</span></div></div>
         <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
         <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function openMyPosts(){
+  if (needLogin('melihat postinganmu')) return;
+  let rows;
+  try { rows = (await api('/products?mine=1')).products; } catch (e) { return toast(e.message); }
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Posting Jualanku</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        ${rows.length ? `<div class="menu-mini">` + rows.map(p => `
+          <div class="menu-line" style="cursor:pointer" onclick="closeModal();openProduct(${p.id})">
+            <span>${esc(p.name)}<br><small style="color:var(--muted)">${rupiah(p.price)} · Stok ${p.stock} · ${p.likes||0} suka</small></span>
+            <b style="color:var(--muted)">→</b>
+          </div>`).join('') + `</div>`
+          : `<div class="empty-feed"><h3>Belum ada postingan</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Yuk mulai jualan di Lebak-Market.</p></div>`}
+        <button class="btn btn-yellow" style="width:100%;margin-top:16px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
       </div>
     </div>
   </div>`;
@@ -1629,8 +1736,8 @@ function openTerms(){
       <div class="modal-head"><h3>Syarat &amp; Ketentuan</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body" style="font-size:13.5px;line-height:1.7;color:var(--ink)">
         <p style="color:var(--muted);margin-bottom:14px">Terakhir diperbarui: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
-        <h4>1. Tentang Lebak.market</h4>
-        <p>Lebak.market adalah platform jual-beli daring yang mempertemukan penjual dan pembeli di wilayah Kabupaten Lebak. Kami menyediakan tempat berjualan, bukan pemilik barang/jasa yang diperjualbelikan.</p>
+        <h4>1. Tentang Lebak-Market</h4>
+        <p>Lebak-Market adalah platform jual-beli daring yang mempertemukan penjual dan pembeli di wilayah Kabupaten Lebak. Kami menyediakan tempat berjualan, bukan pemilik barang/jasa yang diperjualbelikan.</p>
         <h4 style="margin-top:12px">2. Akun Pengguna</h4>
         <p>Pengguna wajib mendaftar dengan data yang benar dan bertanggung jawab penuh atas aktivitas di akunnya. Satu orang hanya boleh memiliki satu akun.</p>
         <h4 style="margin-top:12px">3. Rekening Bersama (Rekber)</h4>
@@ -1640,7 +1747,7 @@ function openTerms(){
         <h4 style="margin-top:12px">5. Biaya</h4>
         <p>Rincian biaya aplikasi dan komisi tercantum di menu "Biaya & Komisi" dan selalu ditampilkan jelas sebelum pembayaran dilakukan.</p>
         <h4 style="margin-top:12px">6. Sengketa</h4>
-        <p>Perselisihan antara pembeli dan penjual pertama-tama diselesaikan lewat fitur chat. Jika tidak menemui titik temu, admin Lebak.market dapat menjadi penengah berdasarkan bukti yang diberikan kedua pihak.</p>
+        <p>Perselisihan antara pembeli dan penjual pertama-tama diselesaikan lewat fitur chat. Jika tidak menemui titik temu, admin Lebak-Market dapat menjadi penengah berdasarkan bukti yang diberikan kedua pihak.</p>
         <h4 style="margin-top:12px">7. Perubahan Ketentuan</h4>
         <p>Ketentuan ini dapat berubah sewaktu-waktu. Perubahan penting akan diinformasikan melalui aplikasi.</p>
       </div>
@@ -1666,7 +1773,7 @@ function openPrivacy(){
         <h4 style="margin-top:12px">5. Hak Pengguna</h4>
         <p>Kamu berhak meminta penghapusan akun & data pribadimu kapan saja dengan menghubungi admin, kecuali data yang wajib disimpan untuk kepatuhan hukum (misal riwayat transaksi).</p>
         <h4 style="margin-top:12px">6. Kontak</h4>
-        <p>Pertanyaan seputar privasi bisa disampaikan lewat menu Chat ke admin Lebak.market.</p>
+        <p>Pertanyaan seputar privasi bisa disampaikan lewat menu Chat ke admin Lebak-Market.</p>
       </div>
     </div>
   </div>`;
@@ -1675,10 +1782,10 @@ function openPrivacy(){
 function openFAQ(){
   const faqs = [
     ['Bagaimana cara belanja aman?', 'Semua transaksi lewat Rekber (rekening bersama) — dana kamu ditahan sistem dan baru diteruskan ke penjual setelah kamu konfirmasi barang diterima.'],
-    ['Bagaimana cara bayar?', 'Scan QRIS otomatis yang muncul saat checkout (berlaku untuk GoPay, OVO, DANA, atau m-banking apapun), atau pakai saldo Lebak.market.'],
+    ['Bagaimana cara bayar?', 'Scan QRIS otomatis yang muncul saat checkout (berlaku untuk GoPay, OVO, DANA, atau m-banking apapun), atau pakai saldo Lebak-Market.'],
     ['Barang belum sampai / tidak sesuai, gimana?', 'Jangan tekan "Selesai" dulu. Chat penjualnya, kalau tidak selesai hubungi admin lewat menu Chat untuk mediasi.'],
     ['Bagaimana cara jadi penjual?', 'Tekan tombol "+ Mulai Jualan", isi data produk & foto, gratis tanpa biaya posting.'],
-    ['Apa itu Side Quest?', 'Misi ringan dari Lebak.market yang hadiahnya masuk saldo akunmu, bisa dipakai belanja atau ditarik tunai.'],
+    ['Apa itu Side Quest?', 'Misi ringan dari Lebak-Market yang hadiahnya masuk saldo akunmu, bisa dipakai belanja atau ditarik tunai.'],
     ['Berapa biaya platform?', 'Cek rincian lengkap & transparan di menu "Biaya & Komisi" pada halaman utama.'],
     ['Lupa kata sandi / kode OTP tidak masuk?', 'Cek folder spam email kamu. Kalau masih belum masuk, tekan "Kirim ulang" di halaman verifikasi.'],
   ];
@@ -1815,7 +1922,7 @@ function renderFeed(){
     feed.innerHTML = filtered
       ? `<div class="empty-feed"><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci.</p></div>`
       : `<div class="empty-feed"><h3>Belum ada produk</h3>
-          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Jadilah penjual pertama di Lebak.market.</p>
+          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Jadilah penjual pertama di Lebak-Market.</p>
           <button class="btn btn-coral" onclick="openSell()">+ Posting Jualan</button>
         </div>`;
     return;
@@ -1878,7 +1985,8 @@ function openProduct(id, imgIdx = 0){
           <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(p.seller_name)} <span class="verif">✓</span></b>
             <span style="font-size:12px;color:var(--muted);display:block">${esc(p.loc)} · ${km(p.dist)} dari posisimu</span></div>
           ${mine ? '<span class="mine-pill">Kamu</span>'
-                 : `<button class="btn btn-sm" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
+                 : `<button class="btn btn-sm" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>
+                    <button class="btn btn-sm" title="Laporkan penjual" onclick="openReportUser(${p.seller_id}, '${esc(p.seller_name)}', null)">⚑</button>`}
         </div>
         <div class="post-actions">
           <button class="act ${p.liked?'liked':''}" onclick="likeFromDetail(${p.id})">${IC.like} ${p.likes} suka</button>
@@ -2165,13 +2273,13 @@ function renderBuy(){
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
       <div class="pay-opt ${buy.pay==='manual'?'sel':''}" onclick="buy.pay='manual';renderBuy()">
-        <span class="ic" style="font-weight:800;font-size:13px">TF</span>
-        <div><b>Transfer / QRIS</b><span>Bayar ke QRIS/rekening toko lalu unggah bukti · verifikasi oleh admin</span></div>
+        <span class="ic" style="font-weight:800;font-size:13px">QR</span>
+        <div><b>QRIS Otomatis</b><span>Scan & bayar pakai GoPay/OVO/DANA/m-banking apa saja · terverifikasi otomatis dalam hitungan detik</span></div>
         <span class="rad"></span>
       </div>
       <div class="pay-opt ${saldoOk ? (buy.pay==='saldo'?'sel':'') : 'off'}" ${saldoOk?`onclick="buy.pay='saldo';renderBuy()"`:''}>
         <span class="ic" style="font-weight:800;font-size:13px">S</span>
-        <div><b>Saldo Lebak.market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
+        <div><b>Saldo Lebak-Market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
         <span class="rad"></span>
       </div>
 
@@ -2182,7 +2290,7 @@ function renderBuy(){
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         ${buy.pay==='manual'
-          ? `<div class="sum-row"><span>Kode unik (untuk pencocokan transfer)</span><span>Rp1–499</span></div>`
+          ? `<div class="sum-row"><span>Kode unik QRIS (ditambahkan otomatis)</span><span>Rp1–499</span></div>`
           : `<div class="sum-row"><span>Biaya layanan (Saldo — gratis)</span><span>Rp0</span></div>`}
         <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
@@ -2340,11 +2448,53 @@ async function confirmDone(orderId){
     await refreshBadges(); renderOrders();
   } catch (e) { toast(e.message); }
 }
-async function complain(orderId){
+function complain(orderId){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Ajukan Komplain</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="safe-note">Dana tetap ditahan sistem sampai admin menyelesaikan sengketa berdasarkan bukti dari kedua pihak.</div>
+        <label class="f" style="margin-top:12px">Ceritakan masalahnya (barang tidak sesuai, tidak sampai, dll.)</label>
+        <textarea class="f" id="cReason" rows="4" placeholder="cth: Barang yang datang beda warna dari foto..."></textarea>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="sendComplain('${orderId}')">Kirim Komplain</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function sendComplain(orderId){
+  const reason = document.getElementById('cReason').value.trim();
+  if (reason.length < 5) return toast('Jelaskan dulu masalahnya (minimal 5 karakter)');
   try {
-    await api('/orders/' + orderId + '/complain', { method:'POST' });
-    toast('Komplain dibuka — dana ditahan sementara');
-    renderOrders();
+    await api('/orders/' + orderId + '/complain', { method:'POST', body:{ reason } });
+    toast('Komplain dibuka — dana ditahan sampai sengketa selesai');
+    closeModal(); renderOrders();
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- LAPORKAN PENGGUNA ---------- */
+function openReportUser(userId, userName, orderId){
+  if (needLogin('melaporkan pengguna')) return;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Laporkan Pengguna</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Melaporkan <b>${esc(userName)}</b>. Laporan palsu/tidak berdasar juga bisa berakibat sanksi.</p>
+        <label class="f">Alasan laporan</label>
+        <textarea class="f" id="rpReason" rows="4" placeholder="cth: Barang tidak dikirim setelah dibayar, tidak merespons chat..."></textarea>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="sendReportUser(${userId}, ${orderId ? `'${orderId}'` : 'null'})">Kirim Laporan</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function sendReportUser(reportedId, orderId){
+  const reason = document.getElementById('rpReason').value.trim();
+  if (reason.length < 5) return toast('Jelaskan dulu alasannya (minimal 5 karakter)');
+  try {
+    const r = await api('/reports', { method:'POST', body:{ reportedId, orderId, reason } });
+    toast(r.message);
+    closeModal();
   } catch (e) { toast(e.message); }
 }
 
@@ -2425,6 +2575,7 @@ function orderCard(o, asSeller){
       <div><b>${esc(o.pname)}</b>
         <span>${rupiah(o.price)} · ${asSeller ? 'Pembeli: ' + esc(o.buyer_name) : 'Penjual: ' + esc(o.seller_name)} · ${o.mode==='cod'?'COD':o.mode==='driver'?'Driver + Rekber':'Rekber'}</span></div>
       <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">Chat</button>
+      <button class="btn btn-sm" title="Laporkan" onclick="openReportUser(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}', '${o.id}')">⚑</button>
     </div>
     ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Titik temu: ${esc(o.meet_point)} · ${esc(o.meet_time)}</p>` : ''}
     ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}${o.buyer_lat ? ` · <a href="https://maps.google.com/?q=${o.buyer_lat},${o.buyer_lng}" target="_blank" rel="noopener" style="color:var(--amber);font-weight:700">📍 Lokasi GPS pembeli</a>` : ''}</p>` : ''}
@@ -2806,7 +2957,10 @@ async function init(){
     startGeo(); // lokasi LIVE: watchPosition terus mengikuti pergerakanmu
   }
   if (token){
-    try { user = (await api('/me')).user; store.set('user', user); afterLogin(); renderAuthSlot(); }
+    try {
+      user = (await api('/me')).user; store.set('user', user); afterLogin(); renderAuthSlot();
+      if (!user.verified) { pendingReg = { email: user.email }; openOtp(); }
+    }
     catch { await loadFeed(); }
   } else {
     await loadFeed();

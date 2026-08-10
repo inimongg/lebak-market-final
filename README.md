@@ -1,4 +1,4 @@
-# 🌾 Lebak.market — Sosmed Jualan & Kuliner Lebak (Fullstack, 100% Real & Realtime)
+# 🌾 Lebak-Market — Sosmed Jualan & Kuliner Lebak (Fullstack, 100% Real & Realtime)
 
 Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**. Penjual lokal Lebak **selalu diprioritaskan** — lokal pride!
 
@@ -36,7 +36,12 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 |---|---|
 | `POST /api/auth/register` | Validasi ketat (email typo/sekali-pakai ditolak) → **akun langsung aktif + JWT** (login bisa seketika); OTP dikirim untuk verifikasi email (opsional) |
 | `POST /api/auth/verify` | Cek OTP (kedaluwarsa 10 mnt, maks 5 percobaan) → tandai email terverifikasi |
-| `POST /api/auth/login` · `GET /api/me` | Login (password bcrypt) · profil dari token — termasuk penyelamat otomatis untuk pendaftar lama yang OTP-nya tak sampai |
+| `POST /api/auth/login` · `GET /api/me` | Login (password bcrypt) · profil dari token — termasuk penyelamat otomatis untuk pendaftar lama yang OTP-nya tak sampai; ditolak (403) bila akun diblokir admin |
+| `POST /api/auth/forgot` · `POST /api/auth/reset-password` | Lupa password: kirim kode 6 digit ke email → set password baru (kedaluwarsa 10 mnt, maks 5 percobaan) |
+| `POST /api/reports` | Laporkan pengguna lain (opsional kaitkan ke order) — masuk antrean tinjauan admin |
+| `POST /api/orders/:id/complain` | Pembeli membuka sengketa dengan alasan wajib diisi — dana tetap ditahan sampai admin memutuskan |
+| **Admin:** `GET/POST /api/admin/disputes*` | Tinjau sengketa & putuskan: cairkan ke penjual (`release`) atau refund ke pembeli (`refund`) |
+| **Admin:** `GET/POST /api/admin/reports*`, `/api/admin/users/:id/unblock` | Tinjau laporan pengguna, blokir/lepas blokir akun |
 | `GET /api/products` | Filter `cat`/`radius`/`q` + `lat`/`lng` posisi live penonton — jarak dihitung **Haversine asli**, urut Lebak dulu lalu terdekat |
 | `POST /api/products` | Posting jualan (auth) — menyimpan koordinat GPS penjual saat posting (fallback: pusat kecamatan domisili) |
 | `POST /api/orders` | Buat order rekber/driver/COD — **semua biaya dihitung server** (anti manipulasi) |

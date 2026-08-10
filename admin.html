@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Admin — Lebak.market</title>
+<title>Admin — Lebak-Market</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1c1e21;font-size:14px;padding:20px}
@@ -27,8 +27,8 @@ img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;d
 </head>
 <body>
 <div class="wrap">
-  <h1>Admin Lebak.market</h1>
-  <p class="muted">Verifikasi pembayaran manual, penarikan saldo, dan pengaturan tujuan pembayaran.</p>
+  <h1>Admin Lebak-Market</h1>
+  <p class="muted">Pembayaran diverifikasi otomatis lewat QRIS (VPay) — bagian ini hanya untuk cadangan (jika gateway gagal), sengketa, penarikan saldo, dan pengaturan lain.</p>
 
   <div class="card">
     <b>Kunci Admin (ADMIN_KEY)</b>
@@ -37,7 +37,16 @@ img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;d
   </div>
 
   <div id="panel" style="display:none">
-    <h2>Pembayaran Manual — Menunggu Verifikasi</h2>
+    <h2>⚠️ Sengketa — Komplain Menunggu Keputusan</h2>
+    <div id="disputes"></div>
+
+    <h2>🚩 Laporan Pengguna — Menunggu Ditinjau</h2>
+    <div id="reports"></div>
+
+    <h2>🔒 Pengguna Diblokir</h2>
+    <div id="blockedUsers"></div>
+
+    <h2>Pembayaran Manual (Cadangan) — Menunggu Verifikasi</h2>
     <div id="payments"></div>
 
     <h2>Permintaan Penarikan Saldo</h2>
@@ -91,8 +100,45 @@ async function api(path, opt = {}){
 
 async function load(){
   try {
-    const [pay, wd, ords, qs, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), api('/admin/quests'), fetch('/api/paycfg').then(r => r.json())]);
+    const [disp, rep, blocked, pay, wd, ords, qs, cfg] = await Promise.all([api('/admin/disputes'), api('/admin/reports'), api('/admin/users/blocked'), api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), api('/admin/quests'), fetch('/api/paycfg').then(r => r.json())]);
     $('panel').style.display = '';
+    $('disputes').innerHTML = disp.disputes.length ? disp.disputes.map(d => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(d.total)}</span>
+          <span class="tag" style="background:#fdecec;color:#c0392b">SENGKETA</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(d.id)} · ${esc(d.pname)} · ${new Date(d.created_at).toLocaleString('id-ID')}<br>
+        Pembeli: ${esc(d.buyer_name)} (${esc(d.buyer_email)}) ⚔️ Penjual: ${esc(d.seller_name)} (${esc(d.seller_email)})</div>
+        <p style="margin-top:8px;white-space:pre-wrap"><b>Alasan komplain:</b> ${esc(d.dispute_reason || '-')}</p>
+        <input id="dnote-${esc(d.id)}" placeholder="Catatan keputusan (opsional, akan dikirim ke kedua pihak)">
+        <div class="row">
+          <button class="btn-g" onclick="resolveDispute('${d.id}','release')">✓ Menangkan Penjual — Cairkan Dana</button>
+          <button class="btn-r" onclick="resolveDispute('${d.id}','refund')">↩ Menangkan Pembeli — Refund</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada sengketa menunggu keputusan.</div>';
+    $('reports').innerHTML = rep.reports.length ? rep.reports.map(r => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <b>${esc(r.target_name)} ${r.target_blocked ? '<span class="tag" style="background:#fdecec;color:#c0392b">SUDAH DIBLOKIR</span>' : ''}</b>
+          <span class="muted">${new Date(r.at).toLocaleString('id-ID')}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">Dilaporkan oleh: ${esc(r.reporter_name)} (${esc(r.reporter_email)})${r.order_id ? ' · Order ' + esc(r.order_id) : ''}<br>Target: ${esc(r.target_email)} · ${esc(r.target_phone)}</div>
+        <p style="margin-top:8px;white-space:pre-wrap"><b>Alasan:</b> ${esc(r.reason)}</p>
+        <div class="row">
+          <button class="btn-r" onclick="if(confirm('Blokir akun ${esc(r.target_name)}?'))blockFromReport(${r.id})">🔒 Blokir Akun</button>
+          <button class="btn-o" onclick="dismissReport(${r.id})">Abaikan Laporan</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada laporan menunggu.</div>';
+    $('blockedUsers').innerHTML = blocked.users.length ? blocked.users.map(u => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <b>${esc(u.name)}</b>
+          <button class="btn-o" onclick="unblockUser(${u.id})">Lepas Blokir</button>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(u.email)} · ${esc(u.phone)}</div>
+        ${u.block_reason ? `<p class="muted" style="margin-top:6px">Alasan: ${esc(u.block_reason)}</p>` : ''}
+      </div>`).join('') : '<div class="card muted">Tidak ada pengguna yang diblokir.</div>';
     $('payments').innerHTML = pay.payments.length ? pay.payments.map(p => `
       <div class="card">
         <div class="row" style="margin:0;justify-content:space-between">
@@ -166,6 +212,27 @@ async function load(){
     $('qrisNow').innerHTML = cfg.qris ? `<img class="qris" src="${esc(cfg.qris)}" alt="QRIS">` : '<p class="muted" style="margin-top:6px">Belum ada QRIS terpasang.</p>';
     if (cfg.info) $('payInfo').value = cfg.info;
   } catch (e) { alert(e.message); }
+}
+async function resolveDispute(id, action){
+  const noteEl = $('dnote-' + id);
+  const note = noteEl ? noteEl.value : '';
+  const label = action === 'release' ? 'Cairkan dana ke PENJUAL' : 'REFUND dana ke pembeli';
+  if (!confirm(label + ' untuk order ' + id + '?')) return;
+  try { await api('/admin/disputes/' + id + '/resolve', { method:'POST', body:{ action, note } }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function blockFromReport(id){
+  try { await api('/admin/reports/' + id + '/block', { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function dismissReport(id){
+  try { await api('/admin/reports/' + id + '/dismiss', { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function unblockUser(id){
+  if (!confirm('Lepas blokir pengguna ini?')) return;
+  try { await api('/admin/users/' + id + '/unblock', { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
 }
 async function act(id, what){
   try { await api('/admin/payments/' + id + '/' + what, { method:'POST' }); load(); }
