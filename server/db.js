@@ -190,7 +190,6 @@ try { db.exec('ALTER TABLE products ADD COLUMN deleted INTEGER NOT NULL DEFAULT 
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lat REAL'); } catch {} // titik GPS pembeli saat checkout (utk share-loc ke driver)
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lng REAL'); } catch {}
 try { db.exec('ALTER TABLE wallet_txns ADD COLUMN status TEXT'); } catch {} // status penarikan: Diproses | Sukses
-try { db.exec('ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0'); } catch {} // pemblokiran akun oleh admin (moderasi)
 
 /* ==================================================================
  * BACKUP OTOMATIS DATABASE
@@ -235,31 +234,5 @@ function backupNow(){
 // lalu berulang tiap 24 jam selama server hidup
 setTimeout(backupNow, 2 * 60 * 1000);
 setInterval(backupNow, 24 * 60 * 60 * 1000);
-
-/* ==================================================================
- * REPORT & BLOCK — moderasi antar pengguna
- * - reports: laporan user/produk ke admin (ditinjau di /admin.html)
- * - blocks: pemblokiran satu arah (blocker tidak melihat/dihubungi blocked)
- * ================================================================== */
-db.exec(`
-  CREATE TABLE IF NOT EXISTS reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reporter_id INTEGER NOT NULL REFERENCES users(id),
-    target_type TEXT NOT NULL,        -- 'user' | 'product'
-    target_id INTEGER NOT NULL,       -- user_id atau product_id yg dilaporkan
-    reason TEXT NOT NULL,             -- kategori: penipuan | barang_ilegal | spam | pelecehan | lainnya
-    note TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'Menunggu', -- Menunggu | Ditinjau | Selesai
-    created_at INTEGER NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS blocks (
-    blocker_id INTEGER NOT NULL REFERENCES users(id),
-    blocked_id INTEGER NOT NULL REFERENCES users(id),
-    at INTEGER NOT NULL,
-    PRIMARY KEY (blocker_id, blocked_id)
-  );
-`);
-db.exec('CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status)');
 
 module.exports = db;
