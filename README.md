@@ -58,11 +58,22 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 
 **Keamanan yang sudah diterapkan:** password di-bcrypt, sesi JWT, harga/ongkir/komisi dihitung ulang di server (input frontend tidak dipercaya), OTP dibatasi umur & percobaan, escape output di frontend.
 
-## 💳 Pembayaran: Transfer/QRIS Manual + Saldo
+## 💳 Pembayaran & Struktur Biaya
 
-Tanpa payment gateway — pembeli membayar ke **QRIS/rekening milik pemilik platform** (diatur di `/admin.html`), total diberi **kode unik Rp1–499** untuk pencocokan mutasi, pembeli mengunggah bukti, lalu **admin memverifikasi satu klik** di `/admin.html` → dana berstatus ditahan rekber dan alur berjalan normal. Saldo internal juga bisa dipakai membayar (tanpa biaya).
+**Pembayaran:** QRIS otomatis via payment gateway VPay (terverifikasi otomatis dalam hitungan detik, tanpa perlu admin) atau Saldo internal (gratis, instan). Butuh `VPAY_API_KEY` di env — tanpa itu, hanya Saldo yang bisa dipakai.
 
-Integrasi gateway (Duitku/Midtrans) telah dihapus dari kode — lihat riwayat git bila ingin dipasang kembali.
+**Struktur biaya — cuma 2, murni persentase, tidak ada biaya tersembunyi:**
+
+| Dibebankan ke | Besaran | Kapan |
+|---|---|---|
+| **Pembeli** | 1% dari harga barang | Ditambahkan ke total tagihan saat checkout |
+| **Penjual** | 2% dari harga barang | Dipotong otomatis saat dana rekber cair (berlaku sama untuk transaksi COD, dicatat sebagai tagihan bila belum ada pencairan) |
+
+Tidak ada lagi biaya ekstra untuk "gratis ongkir" (dulu +4%) — sekarang murni fitur marketing (badge & prioritas feed), tanpa biaya tambahan bagi penjual.
+
+**Ongkos Driver Lebak** — tarif per km, **100% masuk ke driver, tanpa potongan platform**:
+- Km pertama: Rp10.000
+- Km selanjutnya: Rp3.000/km
 
 ## 💼 Side Quest (misi berhadiah saldo)
 

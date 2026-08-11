@@ -1034,11 +1034,10 @@ const CATS = [
 const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ternak:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
 const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ternak:'Peternakan', fashion:'Fashion', kriya:'Kriya Lebak' };
 const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
-let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
-let COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
+let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, BUYER_FEE_RATE = 0.01, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 let KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
-const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
+const driverFee = d => d <= 1 ? 10000 : 10000 + Math.ceil(d - 1) * 3000; // km pertama Rp10rb, selanjutnya Rp3rb/km — 100% ke driver
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
   if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
@@ -1051,7 +1050,7 @@ const AC = ['#e9f3ec','#f0efe9'];
 const acOf = id => AC[(id||0) % AC.length];
 const initOf = n => (String(n||'?').trim()[0] || '?').toUpperCase();
 const avaEl = (name, avatar) => avatar ? `<img src="${esc(avatar)}" alt="">` : initOf(name);
-let SELLER_COMM = 0.015; // dari /api/config
+let SELLER_COMM = 0.02; // dari /api/config
 
 /* ---------- API CLIENT ---------- */
 const store = {
@@ -1768,18 +1767,16 @@ async function sendQuestProof(id){
 async function openInfoBiaya(){
   let rev = { total: 0, byKind: [] };
   try { rev = await api('/revenue'); } catch {}
-  const kindLabel = { app_fee:'Biaya aplikasi', commission:'Komisi penjual', driver_cut:'Komisi driver', freeship_extra:'Program gratis ongkir', cod_fee:'Komisi COD' };
+  const kindLabel = { buyer_fee:'Biaya aplikasi (pembeli)', commission:'Komisi penjual' };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <div class="modal-head"><h3>Biaya &amp; Komisi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Rincian biaya platform:</p>
-        <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
-        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — ${SELLER_COMM*100}%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
-        <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
-        <div class="mini-row"><span class="em g-2"><span class="letter-s">C</span></span><div><b>Komisi COD — ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)})</b><span>Dicatat sebagai tagihan penjual, dipotong otomatis dari pencairan rekber berikutnya</span></div></div>
-        <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Rincian biaya platform — hanya 2, murni persentase, tidak ada biaya tersembunyi:</p>
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${BUYER_FEE_RATE*100}% dari harga barang</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
+        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — ${SELLER_COMM*100}%</b><span>Dipotong otomatis saat dana rekber dicairkan (berlaku sama untuk COD)</span></div></div>
+        <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Ongkos driver — 100% milik driver</b><span>Tanpa potongan platform. Tarif: Rp10.000 (km pertama) + Rp3.000/km berikutnya</span></div></div>
         <div class="menu-mini" style="margin-top:14px">
           <div class="mtitle">Pendapatan platform</div>
           ${rev.byKind.length ? rev.byKind.map(r => `<div class="menu-line"><span>${kindLabel[r.kind]||r.kind} (${r.n}×)</span><b>${rupiah(r.amount)}</b></div>`).join('') : '<div class="menu-line"><span>Belum ada transaksi</span><b>Rp0</b></div>'}
@@ -2324,14 +2321,15 @@ function renderBuy(){
       <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
       <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: email / 08xx' : 'Jalan, kampung/perum, kecamatan, kode pos...'}">${esc(buy.addr)}</textarea>
       ${buy.mode==='driver' && myLoc ? '<p style="font-size:11.5px;color:var(--muted);margin-top:6px">📍 Titik GPS-mu saat ini ikut disertakan agar driver mudah menemukan alamatmu.</p>' : ''}
-      ${buy.mode==='driver' ? `<div class="safe-note"><b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
+      ${buy.mode==='driver' ? `<div class="safe-note"><b>Tarif resmi Driver Lebak:</b> Rp10.000 (km pertama) + Rp3.000/km berikutnya, 100% milik driver tanpa potongan. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
   }
   else {
     const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
     const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
     const fee = 0; // manual: kode unik ditambahkan server · saldo: gratis
-    const saldoNeed = p.price + shipPaid + APP_FEE; // bayar saldo = tanpa biaya layanan
+    const buyerFeeAmt = Math.round(p.price * BUYER_FEE_RATE);
+    const saldoNeed = p.price + shipPaid + buyerFeeAmt; // bayar saldo = tanpa biaya layanan
     const saldoOk = user && (user.balance || 0) >= saldoNeed;
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
@@ -2351,11 +2349,11 @@ function renderBuy(){
         <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':p.ship_cost!=null?'Ongkir (ditetapkan penjual)':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
         ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
-        <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
+        <div class="sum-row"><span>Biaya aplikasi (${BUYER_FEE_RATE*100}%)</span><span>${rupiah(buyerFeeAmt)}</span></div>
         ${buy.pay==='manual'
           ? `<div class="sum-row"><span>Kode unik QRIS (ditambahkan otomatis)</span><span>Rp1–499</span></div>`
           : `<div class="sum-row"><span>Biaya layanan (Saldo — gratis)</span><span>Rp0</span></div>`}
-        <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
+        <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + buyerFeeAmt + fee)}</span></div>
       </div>
       <div class="safe-note">Dana ditahan sistem dan cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">Bayar ke Rekber</button>`;
@@ -2913,8 +2911,8 @@ function openSell(){
         <input class="f" id="sStock" type="number" min="1" value="1">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
-        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan — komisi ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) per transaksi COD</label></div>
-        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Gratis ongkir ditanggung penjual (komisi +4%, prioritas feed)</label></div>
+        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan — komisi ${SELLER_COMM*100}% per transaksi COD (sama seperti komisi biasa)</label></div>
+        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Gratis ongkir ditanggung penjual (badge &amp; prioritas feed, tanpa biaya tambahan)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Posting gratis · komisi ${SELLER_COMM*100}% per transaksi sukses</p>
       </div>
@@ -3006,10 +3004,8 @@ async function init(){
     const cfg = await api('/config');
     KECAMATAN = cfg.kecamatan;
     kecCoords = cfg.kecCoords || {};
-    APP_FEE = cfg.fees.appFee;
+    BUYER_FEE_RATE = cfg.fees.buyerFeeRate ?? BUYER_FEE_RATE;
     SELLER_COMM = cfg.fees.sellerCommission ?? SELLER_COMM;
-    COD_FEE_RATE = cfg.fees.codFeeRate ?? COD_FEE_RATE;
-    COD_FEE_MIN = cfg.fees.codFeeMin ?? COD_FEE_MIN;
     COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;
     FREESHIP_CAP = cfg.limits.freeshipCap; FREESHIP_MIN = cfg.limits.freeshipMin;
   } catch (e) { toast(e.message); }
