@@ -108,15 +108,11 @@ app.use(express.static(path.join(__dirname, '..'), {
 }));
 
 /* ================= KONSTANTA BISNIS ================= */
-const APP_FEE = 1000;
-const SELLER_COMMISSION = 0.015; // 1,5% per transaksi sukses
-const DRIVER_COMMISSION = 0.10;
-const FREESHIP_EXTRA = 0.04;
-/* Komisi COD: transaksi COD tidak lewat rekber, jadi komisi penjual
- * dicatat sebagai TAGIHAN (users.cod_debt) dan dipotong otomatis dari
- * pencairan rekber berikutnya — platform tetap dapat bagian. */
-const COD_FEE_RATE = 0.015, COD_FEE_MIN = 500;
-const codFee = price => Math.max(COD_FEE_MIN, Math.round(price * COD_FEE_RATE));
+const BUYER_FEE_RATE = 0.01;     // 1% dari harga barang — dibebankan ke PEMBELI (ditambahkan ke total bayar)
+const SELLER_COMMISSION = 0.02;  // 2% dari harga barang — dibebankan ke PENJUAL, dipotong saat dana rekber cair
+// Catatan: tidak ada lagi biaya ekstra gratis-ongkir, biaya khusus COD (beda
+// dari komisi biasa), maupun potongan dari ongkir driver — hanya 2 biaya di
+// atas yang berlaku, dari pembeli & penjual, murni persentase.
 const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 const KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
@@ -158,7 +154,7 @@ const prodCoords = p => (p.lat != null && p.lng != null)
   ? { lat: p.lat, lng: p.lng }
   : (KEC_COORDS[p.seller_kec] || KEC_COORDS.Rangkasbitung);
 
-const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
+const driverFee = d => d <= 1 ? 10000 : 10000 + Math.ceil(d - 1) * 3000; // km pertama Rp10rb, selanjutnya Rp3rb/km — 100% masuk driver, tanpa potongan platform
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
   if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
@@ -380,7 +376,7 @@ const adminOk = req => process.env.ADMIN_KEY && (req.query.key === process.env.A
 function markPaid(o){
   db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
   addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana ditahan rekber. Menunggu penjual memproses.');
-  addRevenue(o.id, 'app_fee', o.app_fee);
+  addRevenue(o.id, 'buyer_fee', o.app_fee);
 }
 /* ---- SALDO pengguna (wallet internal) ----
  * Dana escrow yang cair masuk ke saldo penjual; saldo bisa ditarik
@@ -397,7 +393,7 @@ app.get('/api/config', (req, res) => {
     // indikator penyimpanan: "persisten" = volume /data terpasang, data awet
     storage: (process.env.DB_PATH || '').startsWith('/data') || fs.existsSync('/data') ? 'persisten ✓' : 'EPHEMERAL — data hilang tiap deploy! Pasang Volume /data di Railway',
     kecamatan: KECAMATAN, cats: CATS, kecCoords: KEC_COORDS,
-    fees: { appFee: APP_FEE, sellerCommission: SELLER_COMMISSION, driverCommission: DRIVER_COMMISSION, freeshipExtra: FREESHIP_EXTRA, codFeeRate: COD_FEE_RATE, codFeeMin: COD_FEE_MIN },
+    fees: { buyerFeeRate: BUYER_FEE_RATE, sellerCommission: SELLER_COMMISSION },
     limits: { codMaxKm: COD_MAX_KM, driverMaxKm: DRIVER_MAX_KM, freeshipCap: FREESHIP_CAP, freeshipMin: FREESHIP_MIN },
   });
 });
@@ -704,9 +700,10 @@ app.post('/api/orders', auth, async (req, res) => {
 
   const bd = isJasa ? { base: 0, seller: 0, subsidy: 0 } : shipBreakdown(p, mode);
   const ship = Math.max(0, bd.base - bd.seller - bd.subsidy);
+  const buyerFeeAmt = Math.round(p.price * BUYER_FEE_RATE);
   // kode unik utk VPay dihitung otomatis oleh VPay saat create — jangan tambahkan sendiri di sini
   const gatewayFee = 0;
-  const total = p.price + ship + APP_FEE + gatewayFee;
+  const total = p.price + ship + buyerFeeAmt + gatewayFee;
 
   if (paySaldo){
     // ---- BAYAR PAKAI SALDO: langsung lunas & dana ditahan rekber ----
@@ -715,13 +712,13 @@ app.post('/api/orders', auth, async (req, res) => {
     const id = uid();
     db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, buyer_lat, buyer_lng, created_at)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'saldo', p.price, ship, APP_FEE, 0, total,
+      .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'saldo', p.price, ship, buyerFeeAmt, 0, total,
            'Menunggu Pembayaran', recvName, recvAddr, gpsPos?.lat ?? null, gpsPos?.lng ?? null, now());
     walletTxn(req.user.id, 'purchase', -total, 'Bayar ' + p.name.slice(0, 40) + ' (rekber)', id);
     db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(p.id);
     addEvent(id, 'Menunggu Pembayaran', 'Invoice diterbitkan', false);
     addEvent(id, 'Dana Ditahan (Rekber)', 'Dibayar pakai saldo — dana ditahan rekber. Menunggu penjual memproses.');
-    addRevenue(id, 'app_fee', APP_FEE);
+    addRevenue(id, 'buyer_fee', buyerFeeAmt);
     return res.json({ ok: true, order: getOrder(id), payment: { paid: true, method: 'saldo' } });
   }
 
@@ -729,7 +726,7 @@ app.post('/api/orders', auth, async (req, res) => {
   // ---- QRIS DINAMIS VPay: dibuat otomatis, terverifikasi otomatis (polling) ----
   db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, buyer_lat, buyer_lng, created_at)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'vpay', p.price, ship, APP_FEE, gatewayFee, total,
+    .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'vpay', p.price, ship, buyerFeeAmt, gatewayFee, total,
          'Menunggu Pembayaran', recvName, recvAddr, gpsPos?.lat ?? null, gpsPos?.lng ?? null, now());
 
   if (!VPAY_API_KEY){
@@ -922,20 +919,18 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   if (o.mode === 'cod') {
     if (o.status !== 'Janjian COD') return bad(res, 409, 'Status tidak bisa dikonfirmasi');
     // Platform tetap dapat bagian dari COD: komisi dicatat sebagai tagihan
-    // penjual dan dipotong otomatis dari pencairan rekber berikutnya.
-    const fee = codFee(o.price);
-    addRevenue(o.id, 'cod_fee', fee);
+    // penjual (tarif sama dengan komisi biasa) dan dipotong otomatis dari
+    // pencairan rekber berikutnya.
+    const fee = Math.round(o.price * SELLER_COMMISSION);
+    addRevenue(o.id, 'commission', fee);
     db.prepare('UPDATE users SET cod_debt = cod_debt + ? WHERE id = ?').run(fee, o.seller_id);
     addEvent(o.id, 'Selesai',
-      `Transaksi COD selesai. Komisi COD Rp${fee.toLocaleString('id-ID')} dicatat sebagai tagihan penjual (dipotong dari pencairan rekber berikutnya).`);
+      `Transaksi COD selesai. Komisi Rp${fee.toLocaleString('id-ID')} (${SELLER_COMMISSION*100}%) dicatat sebagai tagihan penjual (dipotong dari pencairan rekber berikutnya).`);
     return res.json({ ok: true, order: getOrder(o.id), codFee: fee });
   }
   if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Barang belum dikirim penjual / sudah selesai');
   const commission = Math.round(o.price * SELLER_COMMISSION);
-  const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship
-    ? Math.round(o.price * FREESHIP_EXTRA) : 0;
-  const driverCut = o.mode === 'driver' ? Math.round(o.ship * DRIVER_COMMISSION) : 0;
-  let net = o.price - commission - extra;
+  let net = o.price - commission;
   // lunasi tagihan komisi COD penjual (bila ada) dari pencairan ini
   const debt = db.prepare('SELECT cod_debt FROM users WHERE id = ?').get(o.seller_id)?.cod_debt || 0;
   const debtCut = Math.min(debt, Math.max(0, net));
@@ -944,13 +939,11 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
     net -= debtCut;
   }
   addRevenue(o.id, 'commission', commission);
-  addRevenue(o.id, 'freeship_extra', extra);
-  addRevenue(o.id, 'driver_cut', driverCut);
   // dana cair MASUK KE SALDO penjual — bisa ditarik atau dibelanjakan lagi
   walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair: ' + o.pname.slice(0, 40), o.id);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Rp${net.toLocaleString('id-ID')} masuk ke saldo penjual (komisi ${SELLER_COMMISSION*100}%${extra ? ' + gratis ongkir 4%' : ''}${debtCut ? ' + tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong).`);
-  res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut, debtCut } });
+    `Rp${net.toLocaleString('id-ID')} masuk ke saldo penjual (komisi ${SELLER_COMMISSION*100}%${debtCut ? ' + tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong). Ongkir driver 100% milik driver, tanpa potongan.`);
+  res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, debtCut } });
 });
 
 /* ================= SALDO & PENARIKAN ================= */
@@ -1102,12 +1095,8 @@ app.post('/api/admin/disputes/:id/resolve', (req, res) => {
     addEvent(o.id, 'Dibatalkan — Refund', 'Admin memutuskan sengketa untuk pembeli — dana dikembalikan ke saldo pembeli.' + (note ? ' Catatan admin: ' + note : ''));
   } else if (action === 'release') {
     const commission = Math.round(o.price * SELLER_COMMISSION);
-    const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship ? Math.round(o.price * FREESHIP_EXTRA) : 0;
-    const driverCut = o.mode === 'driver' ? Math.round(o.ship * DRIVER_COMMISSION) : 0;
-    const net = o.price - commission - extra;
+    const net = o.price - commission;
     addRevenue(o.id, 'commission', commission);
-    addRevenue(o.id, 'freeship_extra', extra);
-    addRevenue(o.id, 'driver_cut', driverCut);
     walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair (sengketa dimenangkan penjual): ' + (full.pname || '').slice(0, 40), o.id);
     db.prepare('UPDATE orders SET dispute_note = ? WHERE id = ?').run(note, o.id);
     addEvent(o.id, 'Selesai — Dana Cair', 'Admin memutuskan sengketa untuk penjual — dana dicairkan.' + (note ? ' Catatan admin: ' + note : ''));
