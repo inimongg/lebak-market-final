@@ -30,6 +30,7 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
 const db = require('./db');
+const webpush = require('web-push');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'lebak-market-dev-secret-ganti-di-produksi';
@@ -204,6 +205,54 @@ app.get('/api/events', (req, res) => {
   });
 });
 
+/* ================= PUSH NOTIFICATION (Web Push) =================
+ * Notifikasi tetap masuk walau browser/tab ditutup — lewat Service
+ * Worker (sw.js) + Push API standar browser (VAPID), BUKAN via SSE
+ * (SSE cuma hidup selagi tab terbuka). Perlu 2 kunci VAPID di env:
+ *   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
+ * Generate sekali lewat: npx web-push generate-vapid-keys
+ * Tanpa kunci ini, push nonaktif otomatis (fitur lain tetap normal). */
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '';
+const PUSH_READY = !!(VAPID_PUBLIC && VAPID_PRIVATE);
+if (PUSH_READY) {
+  webpush.setVapidDetails('mailto:' + (process.env.MAIL_SENDER || process.env.GMAIL_USER || 'admin@lebak-market.local'), VAPID_PUBLIC, VAPID_PRIVATE);
+  console.log('🔔 Push notification aktif (VAPID terpasang)');
+} else {
+  console.log('🔕 Push notification NONAKTIF — set VAPID_PUBLIC_KEY & VAPID_PRIVATE_KEY (generate: npx web-push generate-vapid-keys)');
+}
+/* Kirim push ke semua device yang pernah subscribe milik user ini.
+ * Langganan yang sudah kedaluwarsa/dicabut pengguna (404/410) otomatis dibuang. */
+async function sendPush(userId, payload){
+  if (!PUSH_READY) return;
+  const subs = db.prepare('SELECT * FROM push_subs WHERE user_id = ?').all(userId);
+  for (const s of subs) {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload));
+    } catch (err) {
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        db.prepare('DELETE FROM push_subs WHERE endpoint = ?').run(s.endpoint);
+      } else {
+        console.error('[push] gagal kirim ke user', userId, err.message);
+      }
+    }
+  }
+}
+app.get('/api/push/vapid-key', (req, res) => res.json({ key: VAPID_PUBLIC, ready: PUSH_READY }));
+app.post('/api/push/subscribe', auth, (req, res) => {
+  const sub = req.body.subscription;
+  if (!sub || !sub.endpoint || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return bad(res, 400, 'Data langganan push tidak valid');
+  db.prepare(`INSERT INTO push_subs (user_id, endpoint, p256dh, auth, created_at) VALUES (?,?,?,?,?)
+    ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth`)
+    .run(req.user.id, sub.endpoint, sub.keys.p256dh, sub.keys.auth, now());
+  res.json({ ok: true });
+});
+app.post('/api/push/unsubscribe', auth, (req, res) => {
+  const endpoint = String(req.body.endpoint || '');
+  if (endpoint) db.prepare('DELETE FROM push_subs WHERE endpoint = ? AND user_id = ?').run(endpoint, req.user.id);
+  res.json({ ok: true });
+});
+
 /* ================= HELPER ================= */
 const now = () => Date.now();
 const uid = () => 'INV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
@@ -315,6 +364,9 @@ function addEvent(orderId, status, note, notify = true){
     if (o){
       ssePush(o.buyer_id, 'order', { orderId, status, note });
       ssePush(o.seller_id, 'order', { orderId, status, note });
+      const pushPayload = { title: `Pesanan ${orderId} — ${status}`, body: note, url: '/#orders' };
+      sendPush(o.buyer_id, pushPayload);
+      sendPush(o.seller_id, pushPayload);
     }
   }
 }
@@ -600,11 +652,16 @@ app.post('/api/products/:id/delete', auth, (req, res) => {
 
 app.post('/api/products/:id/like', auth, (req, res) => {
   const pid = parseInt(req.params.id, 10);
-  if (!db.prepare('SELECT id FROM products WHERE id = ?').get(pid)) return bad(res, 404, 'Produk tidak ditemukan');
+  const p = db.prepare('SELECT id, seller_id, name FROM products WHERE id = ?').get(pid);
+  if (!p) return bad(res, 404, 'Produk tidak ditemukan');
   const has = db.prepare('SELECT 1 x FROM likes WHERE user_id = ? AND product_id = ?').get(req.user.id, pid);
   if (has) db.prepare('DELETE FROM likes WHERE user_id = ? AND product_id = ?').run(req.user.id, pid);
   else db.prepare('INSERT INTO likes (user_id, product_id, at) VALUES (?,?,?)').run(req.user.id, pid, now());
   const likes = db.prepare('SELECT COUNT(*) c FROM likes WHERE product_id = ?').get(pid).c;
+  // notifikasi ke penjual saat produknya disukai (bukan saat batal suka, bukan suka produk sendiri)
+  if (!has && p.seller_id !== req.user.id) {
+    sendPush(p.seller_id, { title: req.user.name + ' menyukai jualanmu ❤️', body: p.name, url: '/#feed' });
+  }
   res.json({ ok: true, liked: !has, likes });
 });
 
@@ -728,6 +785,7 @@ app.post('/api/orders/:id/review', auth, (req, res) => {
     .run(id, o.id, o.product_id, o.seller_id, o.buyer_id, rating, comment || null, now());
   // notifikasi ke penjual biar dia tau ada ulasan baru masuk
   ssePush(o.seller_id, 'notif', { title: 'Ulasan baru', body: `${rating}★ untuk pesanan ${o.id}` });
+  sendPush(o.seller_id, { title: 'Ulasan baru ⭐', body: `${rating}★ untuk pesanan ${o.id}` + (comment ? ': ' + comment.slice(0, 60) : ''), url: '/#orders' });
   res.json({ ok: true, review: { id, rating, comment } });
 });
 
@@ -991,14 +1049,16 @@ app.post('/api/admin/quest-subs/:id/approve', (req, res) => {
   if (s.status !== 'Menunggu ACC') return res.json({ ok: true, note: 'sudah diproses' });
   db.prepare("UPDATE quest_subs SET status = 'Disetujui' WHERE id = ?").run(s.id);
   walletTxn(s.user_id, 'quest', s.reward, 'Hadiah misi: ' + s.title.slice(0, 60));
+  sendPush(s.user_id, { title: 'Misi disetujui ✓', body: `"${s.title}" — hadiah masuk ke saldomu`, url: '/#misi' });
   res.json({ ok: true });
 });
 app.post('/api/admin/quest-subs/:id/reject', (req, res) => {
   if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
-  const s = db.prepare('SELECT * FROM quest_subs WHERE id = ?').get(req.params.id);
+  const s = db.prepare('SELECT s.*, q.title FROM quest_subs s JOIN quests q ON q.id = s.quest_id WHERE s.id = ?').get(req.params.id);
   if (!s) return bad(res, 404, 'Bukti tidak ditemukan');
   if (s.status !== 'Menunggu ACC') return res.json({ ok: true, note: 'sudah diproses' });
   db.prepare("UPDATE quest_subs SET status = 'Ditolak' WHERE id = ?").run(s.id);
+  sendPush(s.user_id, { title: 'Bukti misi ditolak', body: `"${s.title}" — coba lagi dengan bukti yang lebih jelas`, url: '/#misi' });
   res.json({ ok: true });
 });
 
@@ -1176,6 +1236,7 @@ app.post('/api/chats/:peerId', auth, (req, res) => {
   if (!text) return bad(res, 400, 'Pesan kosong');
   db.prepare('INSERT INTO messages (sender_id, recipient_id, text, read, at) VALUES (?,?,?,0,?)').run(req.user.id, pid, text, now());
   ssePush(pid, 'chat', { from: { id: req.user.id, name: req.user.name }, text, at: now() });
+  sendPush(pid, { title: 'Pesan baru dari ' + req.user.name, body: text.length > 80 ? text.slice(0, 80) + '…' : text, url: '/#chat-' + req.user.id, tag: 'chat-' + req.user.id });
   res.json({ ok: true });
 });
 
