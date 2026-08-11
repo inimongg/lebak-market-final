@@ -68,6 +68,28 @@ Integrasi gateway (Duitku/Midtrans) telah dihapus dari kode — lihat riwayat gi
 
 Fitur pemberdayaan: admin membuat misi di `/admin.html` (judul, instruksi, hadiah Rp, kuota opsional) — mis. bantu promosi, komen sosmed, survei. Pengguna membuka menu **Misi**, mengerjakan, lalu mengirim bukti (keterangan/link + screenshot). Admin meninjau bukti dan sekali klik **ACC** → hadiah langsung masuk ke saldo pengguna (bisa ditarik tunai atau dipakai belanja). Anti-curang: satu akun hanya bisa menyelesaikan tiap misi sekali, kuota dihitung dari yang di-ACC, dan bukti ditolak boleh dicoba ulang.
 
+## 🔔 Notifikasi Push (tetap masuk walau browser/tab ditutup)
+
+Selain SSE (`/api/events`, hanya hidup selagi tab terbuka), aplikasi juga punya **Web Push** lewat Service Worker (`sw.js`) — notifikasi tetap masuk walau browser ditutup atau HP di-lock, selama izin notifikasi sudah diaktifkan pengguna (toggle di menu **Akun Saya → Notifikasi**).
+
+Dipicu otomatis saat: **pesan chat masuk**, **status pesanan berubah** (dibayar/dikirim/selesai/dst.), **ulasan baru**, **produk disukai**, dan **misi di-ACC/ditolak**.
+
+**Wajib diaktifkan sebelum deploy produksi** — tanpa ini, push nonaktif otomatis (fitur lain tetap jalan normal):
+1. Generate kunci sekali saja (simpan baik-baik, jangan digenerate ulang kalau sudah dipakai — nanti semua langganan lama jadi tak valid):
+   ```
+   npx web-push generate-vapid-keys
+   ```
+2. **Lokal:** isi ke `server/.env` (sudah di-gitignore, aman):
+   ```
+   VAPID_PUBLIC_KEY=...
+   VAPID_PRIVATE_KEY=...
+   ```
+   `npm start`/`npm run dev` otomatis membacanya (lewat `node --env-file-if-exists=.env`).
+3. **Produksi (Railway/Render):** isi 2 variabel yang sama lewat dashboard mereka → Environment Variables (mereka tidak membaca file `.env`)
+4. Restart server — log akan menampilkan `🔔 Push notification aktif` bila kunci terbaca
+
+> Catatan: Web Push butuh **HTTPS** (localhost dikecualikan untuk testing). Di HTTP biasa (bukan localhost), browser akan menolak `pushManager.subscribe`.
+
 ## ☁️ Deploy ke Cloud (Railway / Render)
 
 Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Procfile`, dan `render.yaml`.

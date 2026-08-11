@@ -18,6 +18,10 @@ services:
         sync: false                # isi manual di dashboard Render — JANGAN taruh di file/git
       - key: VPAY_BASE_URL
         value: https://vitopediapay.com/api
+      - key: VAPID_PUBLIC_KEY
+        sync: false                # push notification — generate: npx web-push generate-vapid-keys
+      - key: VAPID_PRIVATE_KEY
+        sync: false                # JANGAN taruh di file/git
       # --- Aktifkan jika pakai plan berbayar + persistent disk, agar
       # --- database tidak ter-reset saat redeploy:
       # - key: DB_PATH

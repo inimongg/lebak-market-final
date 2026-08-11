@@ -1079,6 +1079,57 @@ async function api(path, { method = 'GET', body } = {}){
   return data;
 }
 
+/* ---------- PUSH NOTIFICATION (tetap masuk walau browser ditutup) ---------- */
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+function pushSupported(){
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+let swReg = null;
+async function registerSW(){
+  if (!pushSupported()) return null;
+  try { swReg = await navigator.serviceWorker.register('/sw.js'); return swReg; }
+  catch { return null; }
+}
+async function getPushSub(){
+  if (!swReg) return null;
+  try { return await swReg.pushManager.getSubscription(); } catch { return null; }
+}
+async function subscribePush(){
+  if (!pushSupported()) return toast('Browser ini tidak mendukung notifikasi push');
+  if (!token) return toast('Masuk dulu untuk mengaktifkan notifikasi');
+  if (!swReg) await registerSW();
+  if (!swReg) return toast('Gagal menyiapkan notifikasi — coba lagi');
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') return toast('Izin notifikasi ditolak — aktifkan lewat pengaturan browser bila berubah pikiran');
+  try {
+    const cfg = await api('/push/vapid-key');
+    if (!cfg.ready) return toast('Server belum mengaktifkan push notification');
+    let sub = await getPushSub();
+    if (!sub) sub = await swReg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(cfg.key) });
+    await api('/push/subscribe', { method:'POST', body:{ subscription: sub.toJSON() } });
+    toast('Notifikasi diaktifkan 🔔');
+    return true;
+  } catch (e) { toast('Gagal mengaktifkan notifikasi: ' + e.message); return false; }
+}
+async function unsubscribePush(){
+  const sub = await getPushSub();
+  if (sub) {
+    try { await api('/push/unsubscribe', { method:'POST', body:{ endpoint: sub.endpoint } }); } catch {}
+    await sub.unsubscribe();
+  }
+  toast('Notifikasi dimatikan');
+}
+async function togglePush(){
+  const sub = await getPushSub();
+  if (sub) await unsubscribePush(); else await subscribePush();
+  openProfile();
+}
+
 /* ---------- STATE ---------- */
 let products  = [];
 let lastOrders = [], lastSales = [];
@@ -1356,6 +1407,7 @@ async function verifyOtp(){
     store.set('token', token); store.set('user', user);
     renderAuthSlot(); closeModal(); afterLogin();
     toast('Email terverifikasi');
+    if (pushSupported() && Notification.permission === 'default') setTimeout(() => subscribePush(), 1200);
   } catch (e) { toast(e.message); }
 }
 /* Verifikasi ulang dari halaman akun (untuk yang tadinya melewati OTP) */
@@ -1503,11 +1555,22 @@ async function openProfile(){
         <div class="mini-row" style="cursor:pointer" onclick="closeModal();openMyPosts()"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
         <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('orders')"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
         <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('misi')"><span class="em g-5"><span class="letter-s">M</span></span><div><b>Side Quest</b><span>Kerjakan misi, hadiahnya masuk saldo</span></div></div>
+        <div class="mini-row" id="pushRow" style="cursor:pointer" onclick="togglePush()"><span class="em g-2"><span class="letter-s">🔔</span></span><div><b id="pushLabel">Notifikasi</b><span id="pushSub">Memuat status…</span></div></div>
         <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
         <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
       </div>
     </div>
   </div>`;
+  renderPushStatus();
+}
+async function renderPushStatus(){
+  const lbl = document.getElementById('pushLabel'), sub = document.getElementById('pushSub');
+  if (!lbl) return;
+  if (!pushSupported()) { lbl.textContent = 'Notifikasi tidak didukung'; sub.textContent = 'Browser ini tidak mendukung push notification'; return; }
+  if (Notification.permission === 'denied') { lbl.textContent = 'Notifikasi diblokir'; sub.textContent = 'Aktifkan lewat pengaturan situs di browser'; return; }
+  const isOn = !!(await getPushSub());
+  lbl.textContent = isOn ? 'Notifikasi aktif ✓' : 'Aktifkan Notifikasi';
+  sub.textContent = isOn ? 'Chat, pesanan, ulasan, dan misi tetap masuk walau app ditutup — tap untuk matikan' : 'Tap agar chat/pesanan/ulasan tetap masuk walau app ditutup';
 }
 async function openMyPosts(){
   if (needLogin('melihat postinganmu')) return;
@@ -2937,6 +3000,7 @@ async function submitSell(){
 /* ---------- INIT ---------- */
 async function init(){
   renderAuthSlot(); renderCats();
+  registerSW();
   document.getElementById('searchInput').addEventListener('input', searchInput);
   try {
     const cfg = await api('/config');
